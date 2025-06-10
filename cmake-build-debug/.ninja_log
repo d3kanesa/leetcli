@@ -1,24 +1,7 @@
 # ninja log v6
-6	1292	1749567928043859291	CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o	f9e615f1ce9e0404
-1	55	1749568114985581131	build.ninja	91a42f5dfc99c9df
-1292	1341	1749567929329910021	leetcli	3796f87fa10dca1
-9	455	1749567315712814486	CMakeFiles/leetcli.dir/src/main.cpp.o	a6a4f921fecd1e44
-5	575	1749567383703989765	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
-4	19	1749568191245430379	CMakeFiles/install.util	d552520d7b3f3c91
-15	483	1749568550874004305	CMakeFiles/leetcli.dir/src/main.cpp.o	a6a4f921fecd1e44
-16	1266	1749568550874704471	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
-16	1536	1749568550874569638	CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o	f9e615f1ce9e0404
-1536	1641	1749568552394061862	leetcli	3796f87fa10dca1
-4	969	1749568569501436427	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
-969	1005	1749568570466668162	leetcli	3796f87fa10dca1
-3	16	1749568606227629698	CMakeFiles/install.util	d552520d7b3f3c91
-6	1055	1749577198909914060	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
-1055	1161	1749577199958601922	leetcli	3796f87fa10dca1
-2	15	1749577211687767229	CMakeFiles/install.util	d552520d7b3f3c91
-18	468	1749577454081426112	CMakeFiles/leetcli.dir/src/main.cpp.o	a6a4f921fecd1e44
-18	1430	1749577454081809853	CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o	f9e615f1ce9e0404
-1430	1533	1749577455493665404	leetcli	3796f87fa10dca1
-1533	1547	1749577455597042229	CMakeFiles/install.util	d552520d7b3f3c91
 3	1280	1749577584820278613	CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o	f9e615f1ce9e0404
 1280	1331	1749577586096624902	leetcli	3796f87fa10dca1
+18	468	1749577454081426112	CMakeFiles/leetcli.dir/src/main.cpp.o	a6a4f921fecd1e44
+6	1055	1749577198909914060	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
+1	55	1749577870833592304	build.ninja	91a42f5dfc99c9df
 1331	1345	1749577586147860824	CMakeFiles/install.util	d552520d7b3f3c91

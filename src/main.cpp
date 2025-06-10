@@ -27,6 +27,20 @@ int main(int argc, char** argv) {
         std::cout << problem << "\n";
         return 0;
     }
+    if (command == "solve") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli solve <slug>\n";
+            return 1;
+        }
+        std::string slug = argv[2];
+        leetcli::solve_problem(slug);
+        return 0;
+    }
+    if (command == "list") {
+        leetcli::list_fetched_problems();
+        return 0;
+    }
+
 
     std::cerr << "Unknown command: " << command << "\n";
     return 1;

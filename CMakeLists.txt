@@ -12,6 +12,8 @@ add_executable(leetcli
         src/utils.cpp
         include/utils.h
 )
+install(TARGETS leetcli
+        RUNTIME DESTINATION bin)
 
 target_include_directories(leetcli PRIVATE include)
 
