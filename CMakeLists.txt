@@ -9,6 +9,8 @@ find_package(nlohmann_json REQUIRED)
 add_executable(leetcli
         src/main.cpp
         src/leetcode_api.cpp
+        src/utils.cpp
+        include/utils.h
 )
 
 target_include_directories(leetcli PRIVATE include)

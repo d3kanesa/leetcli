@@ -65,6 +65,14 @@ build CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o: CXX_COMPILER__leetcli_unsca
   OBJECT_DIR = CMakeFiles/leetcli.dir
   OBJECT_FILE_DIR = CMakeFiles/leetcli.dir/src
 
+build CMakeFiles/leetcli.dir/src/utils.cpp.o: CXX_COMPILER__leetcli_unscanned_Debug /Users/raihaansandhu/CLionProjects/leetcli/src/utils.cpp || cmake_object_order_depends_target_leetcli
+  DEFINES = -DCURL_STATICLIB
+  DEP_FILE = CMakeFiles/leetcli.dir/src/utils.cpp.o.d
+  FLAGS = -g -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk -fcolor-diagnostics
+  INCLUDES = -I/Users/raihaansandhu/CLionProjects/leetcli/include -isystem /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/include
+  OBJECT_DIR = CMakeFiles/leetcli.dir
+  OBJECT_FILE_DIR = CMakeFiles/leetcli.dir/src
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target leetcli
@@ -73,7 +81,7 @@ build CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o: CXX_COMPILER__leetcli_unsca
 #############################################
 # Link the executable leetcli
 
-build leetcli: CXX_EXECUTABLE_LINKER__leetcli_Debug CMakeFiles/leetcli.dir/src/main.cpp.o CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o | /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcpr.a /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcurl-d.a /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libz.a
+build leetcli: CXX_EXECUTABLE_LINKER__leetcli_Debug CMakeFiles/leetcli.dir/src/main.cpp.o CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o CMakeFiles/leetcli.dir/src/utils.cpp.o | /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcpr.a /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcurl-d.a /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libz.a
   FLAGS = -g -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX15.2.sdk
   LINK_LIBRARIES = /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcpr.a  /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libcurl-d.a  -framework SystemConfiguration  -framework Security  -framework CoreFoundation  -framework CoreServices  /Users/raihaansandhu/.vcpkg-clion/vcpkg/installed/arm64-osx/debug/lib/libz.a
   OBJECT_DIR = CMakeFiles/leetcli.dir
