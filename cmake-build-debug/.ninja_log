@@ -1,7 +1,0 @@
-# ninja log v6
-3	1280	1749577584820278613	CMakeFiles/leetcli.dir/src/leetcode_api.cpp.o	f9e615f1ce9e0404
-1280	1331	1749577586096624902	leetcli	3796f87fa10dca1
-18	468	1749577454081426112	CMakeFiles/leetcli.dir/src/main.cpp.o	a6a4f921fecd1e44
-6	1055	1749577198909914060	CMakeFiles/leetcli.dir/src/utils.cpp.o	bf5af26fdf3ea2e9
-1	55	1749577870833592304	build.ninja	91a42f5dfc99c9df
-1331	1345	1749577586147860824	CMakeFiles/install.util	d552520d7b3f3c91
