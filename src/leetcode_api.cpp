@@ -48,6 +48,12 @@ std::string fetch_problem(const std::string& slug) {
 
     // Parse response JSON
     auto json = nlohmann::json::parse(r.text);
+
+    // Check for missing or null question field
+    if (!json.contains("data") || json["data"].is_null() || !json["data"].contains("question") || json["data"]["question"].is_null()) {
+        return "Problem not found. Check the title slug: \"" + slug + "\"";
+    }
+
     auto question = json["data"]["question"];
 
     std::string title = question["title"];
