@@ -1,0 +1,7 @@
+# macOS system files
+.DS_Store
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+
+cmake_build_debug/
