@@ -10,5 +10,7 @@ namespace leetcli {
     void launch_in_editor(const std::string& path);
     std::string get_problems_dir();
     std::string get_preferred_language();
-
+    void set_session_cookie();
+    std::string get_session_cookie();
+    std::string get_csrf_token();
 }

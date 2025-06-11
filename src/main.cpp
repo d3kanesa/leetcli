@@ -53,7 +53,20 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-
+    if (command == "login") {
+        leetcli::set_session_cookie();
+        return 0;
+    }
+    if (command == "submit") {
+        if (argc < 4) {
+            std::cerr << "Usage: leetcli submit <slug> <file>\n";
+            return 1;
+        }
+        std::string slug = argv[2];
+        std::string filepath = argv[3];
+        leetcli::submit_solution(slug, filepath);
+        return 0;
+    }
     std::cerr << "Unknown command: " << command << "\n";
     return 1;
 }
