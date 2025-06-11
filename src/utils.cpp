@@ -39,7 +39,7 @@ namespace leetcli {
         return config["problems_dir"];
     }
 
-    void leetcli::init_problems_folder() {
+    void init_problems_folder() {
         std::filesystem::path home = std::getenv("HOME");
         std::filesystem::path config_dir = home / ".leetcli";
         std::filesystem::path config_path = config_dir / "config.json";
