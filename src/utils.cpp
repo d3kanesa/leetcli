@@ -6,6 +6,18 @@
 #include <nlohmann/json.hpp>
 
 namespace leetcli {
+    std::string get_preferred_language() {
+        std::filesystem::path config_path = std::filesystem::path(std::getenv("HOME")) / ".leetcli/config.json";
+        if (!std::filesystem::exists(config_path)) {
+            std::cerr << "Error: config not found. Run `leetcli init` first.\n";
+            std::exit(1);
+        }
+
+        std::ifstream in(config_path);
+        nlohmann::json config;
+        in >> config;
+        return config.value("lang", "cpp"); // fallback to cpp
+}
 
     static std::filesystem::path get_home() {
         if (auto* h = std::getenv("HOME"); h && *h) return h;
@@ -27,12 +39,11 @@ namespace leetcli {
         return config["problems_dir"];
     }
 
-    void init_problems_folder() {
-        std::filesystem::path home = get_home();
+    void leetcli::init_problems_folder() {
+        std::filesystem::path home = std::getenv("HOME");
         std::filesystem::path config_dir = home / ".leetcli";
         std::filesystem::path config_path = config_dir / "config.json";
 
-        // Check if already initialized
         if (std::filesystem::exists(config_path)) {
             std::cerr << "leetcli is already initialized.\n";
             std::cerr << "To reset: delete " << config_path << "\n";
@@ -44,8 +55,14 @@ namespace leetcli {
         std::filesystem::create_directories(config_dir);
         std::filesystem::create_directories(default_path);
 
+        // Ask for preferred language
+        std::string lang;
+        std::cout << "Enter your preferred language (e.g., cpp, python, java): ";
+        std::getline(std::cin, lang);
+
         nlohmann::json config = {
-            {"problems_dir", default_path}
+            {"problems_dir", default_path},
+            {"lang", lang}
         };
 
         std::ofstream out(config_path);
@@ -57,7 +74,6 @@ namespace leetcli {
         out << config.dump(4);
         std::cout << "leetcli initialized.\nProblems will be saved to:\n  " << default_path << "\n";
     }
-
 
     std::string html_to_text(const std::string& html) {
         std::string text = html;
