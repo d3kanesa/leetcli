@@ -102,63 +102,12 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
 }
 
     void solve_problem(const std::string& slug) {
-    // Step 1: Query LeetCode to get the ID and Title
-    nlohmann::json query = {
-        {"query", R"(
-            query getQuestionDetail($titleSlug: String!) {
-                question(titleSlug: $titleSlug) {
-                    title
-                    questionId
-                }
-            }
-        )"},
-        {"variables", {{"titleSlug", slug}}}
-    };
-
-    cpr::Response r = cpr::Post(
-        cpr::Url{"https://leetcode.com/graphql"},
-        cpr::Header{{"Content-Type", "application/json"}},
-        cpr::Body{query.dump()}
-    );
-
-    if (r.status_code != 200) {
-        std::cerr << "Failed to query problem info.\n";
-        return;
-    }
-
-    auto json = nlohmann::json::parse(r.text);
-    auto question = json["data"]["question"];
-    std::string id = question["questionId"];
-    std::string title = question["title"];
-    std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
-
-    // Step 2: Build the folder path
-    std::string folder = get_problems_dir() + "/" + id + ". " + safe_title;
-
-    if (!std::filesystem::exists(folder)) {
-        std::cerr << "Folder not found. Run: leetcli fetch " << slug << "\n";
-        return;
-    }
-
-    // Step 3: Try to find any known solution file
-    std::vector<std::string> extensions = {".cpp", ".py", ".java", ".js", ".cs"};
-    std::string solution_file;
-
-    for (const auto& ext : extensions) {
-        std::filesystem::path candidate = folder + "/solution" + ext;
-        if (std::filesystem::exists(candidate)) {
-            solution_file = candidate.string();
-            break;
+        std::string solution_file;
+        if (!get_solution_filepath(slug, solution_file)) {
+            launch_in_editor(solution_file);
+        } else {
+            std::cout << "No solution file found. Opening folder instead.\n";
         }
-    }
-
-    // Step 4: Launch appropriate file or folder
-    if (!solution_file.empty()) {
-        launch_in_editor(solution_file);
-    } else {
-        std::cout << "No solution file found. Opening folder instead.\n";
-        launch_in_editor(folder);
-    }
 }
     void list_fetched_problems() {
 
@@ -182,13 +131,15 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
         }
     }
 
-    void submit_solution(const std::string& slug, const std::string& filepath) {
+    void submit_solution(const std::string& slug) {
         std::string session = get_session_cookie();
         std::string csrf = get_csrf_token();
         // Step 1: Read source code from file
-        std::ifstream file(filepath);
+        std::string solution_path;
+        get_solution_filepath(slug, solution_path);
+        std::ifstream file(solution_path);
         if (!file) {
-            std::cerr << "Error: Could not open file " << filepath << "\n";
+            std::cerr << "Error: Could not open file " << solution_path << "\n";
             return;
         }
         std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());

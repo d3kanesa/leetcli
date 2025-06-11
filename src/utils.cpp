@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <cpr/cpr.h>
 
 namespace leetcli {
 
@@ -195,5 +196,57 @@ namespace leetcli {
         }
 
         return config["csrf_token"];
+    }
+    int get_solution_filepath(const std::string& slug, std::string& solution_file) {
+        // Step 1: Query LeetCode to get the ID and Title
+        nlohmann::json query = {
+            {"query", R"(
+            query getQuestionDetail($titleSlug: String!) {
+                question(titleSlug: $titleSlug) {
+                    title
+                    questionId
+                }
+            }
+        )"},
+            {"variables", {{"titleSlug", slug}}}
+        };
+
+        cpr::Response r = cpr::Post(
+            cpr::Url{"https://leetcode.com/graphql"},
+            cpr::Header{{"Content-Type", "application/json"}},
+            cpr::Body{query.dump()}
+        );
+
+        if (r.status_code != 200) {
+            std::cerr << "Failed to query problem info.\n";
+            return 1;
+        }
+
+        auto json = nlohmann::json::parse(r.text);
+        auto question = json["data"]["question"];
+        std::string id = question["questionId"];
+        std::string title = question["title"];
+        std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
+
+        // Step 2: Build the folder path
+        std::string folder = get_problems_dir() + "/" + id + ". " + safe_title;
+
+        if (!std::filesystem::exists(folder)) {
+            std::cerr << "Folder not found. Run: leetcli fetch " << slug << "\n";
+            return 1;
+        }
+
+        // Step 3: Try to find any known solution file
+        std::vector<std::string> extensions = {".cpp", ".py", ".java", ".js", ".cs"};
+
+        for (const auto& ext : extensions) {
+            std::filesystem::path candidate = folder + "/solution" + ext;
+            if (std::filesystem::exists(candidate)) {
+                solution_file = candidate.string();
+                break;
+            }
+        }
+
+        return 0;
     }
 } // namespace leetcli
