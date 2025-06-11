@@ -5,3 +5,5 @@
 .idea/
 
 cmake_build_debug/
+
+build/
