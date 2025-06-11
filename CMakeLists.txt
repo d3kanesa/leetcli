@@ -13,10 +13,12 @@ add_executable(leetcli
         include/utils.h
 )
 
-install(TARGETS leetcli
-        RUNTIME DESTINATION bin)
+# ▸▸▸ NEW: guarantee we get /SUBSYSTEM:CONSOLE on MSVC, no -mwindows on MinGW
+set_target_properties(leetcli PROPERTIES
+        WIN32_EXECUTABLE FALSE        # never build as a GUI app
+)
 
 target_include_directories(leetcli PRIVATE include)
-
 target_link_libraries(leetcli PRIVATE cpr::cpr nlohmann_json::nlohmann_json)
 
+install(TARGETS leetcli RUNTIME DESTINATION bin)
