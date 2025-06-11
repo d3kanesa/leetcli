@@ -1,9 +1,11 @@
-# macOS system files
-.DS_Store
+# build artifacts
+build/
+cmake-build-debug/
 
-# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+# JetBrains IDEs
 .idea/
 
-cmake_build_debug/
+# macOS
+.DS_Store
 
-build/
+two-sum.md
