@@ -6,10 +6,18 @@
 #include <nlohmann/json.hpp>
 
 namespace leetcli {
+
+    static std::filesystem::path get_home() {
+        if (auto* h = std::getenv("HOME"); h && *h) return h;
+        if (auto* u = std::getenv("USERPROFILE"); u && *u) return u;
+        std::cerr << "Fatal: cannot determine home directory.\n";
+        std::exit(1);
+    }
+
     std::string get_problems_dir() {
-        std::filesystem::path config_path = std::filesystem::path(std::getenv("HOME")) / ".leetcli/config.json";
+        std::filesystem::path config_path = get_home() / ".leetcli/config.json";
         if (!std::filesystem::exists(config_path)) {
-            std::cerr << "Error: config not found. Run `leetcli init` first.\n";
+            std::cerr << "Error:  not found. Run `leetcli init` first.\n";
             std::exit(1);
         }
 
@@ -20,7 +28,7 @@ namespace leetcli {
     }
 
     void init_problems_folder() {
-        std::filesystem::path home = std::getenv("HOME");
+        std::filesystem::path home = get_home();
         std::filesystem::path config_dir = home / ".leetcli";
         std::filesystem::path config_path = config_dir / "config.json";
 
@@ -32,7 +40,7 @@ namespace leetcli {
         }
 
         // Create config and problems dir
-        std::string default_path = std::filesystem::current_path().string() + "/problems";
+        std::string default_path = std::filesystem::current_path().string() + "/problems/";
         std::filesystem::create_directories(config_dir);
         std::filesystem::create_directories(default_path);
 
