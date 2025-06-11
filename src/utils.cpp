@@ -6,8 +6,17 @@
 #include <nlohmann/json.hpp>
 
 namespace leetcli {
+
+
+    static std::filesystem::path get_home() {
+        if (auto* h = std::getenv("HOME"); h && *h) return h;
+        if (auto* u = std::getenv("USERPROFILE"); u && *u) return u;
+        std::cerr << "Fatal: cannot determine home directory.\n";
+        std::exit(1);
+    }
+
     std::string get_preferred_language() {
-        std::filesystem::path config_path = std::filesystem::path(std::getenv("HOME")) / ".leetcli/config.json";
+        std::filesystem::path config_path = std::filesystem::path(get_home()) / ".leetcli/config.json";
         if (!std::filesystem::exists(config_path)) {
             std::cerr << "Error: config not found. Run `leetcli init` first.\n";
             std::exit(1);
@@ -19,12 +28,6 @@ namespace leetcli {
         return config.value("lang", "cpp"); // fallback to cpp
 }
 
-    static std::filesystem::path get_home() {
-        if (auto* h = std::getenv("HOME"); h && *h) return h;
-        if (auto* u = std::getenv("USERPROFILE"); u && *u) return u;
-        std::cerr << "Fatal: cannot determine home directory.\n";
-        std::exit(1);
-    }
 
     std::string get_problems_dir() {
         std::filesystem::path config_path = get_home() / ".leetcli/config.json";
@@ -40,7 +43,7 @@ namespace leetcli {
     }
 
     void init_problems_folder() {
-        std::filesystem::path home = std::getenv("HOME");
+        std::filesystem::path home = get_home();
         std::filesystem::path config_dir = home / ".leetcli";
         std::filesystem::path config_path = config_dir / "config.json";
 
