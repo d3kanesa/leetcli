@@ -150,9 +150,9 @@ namespace leetcli {
         in >> config;
 
         std::string session, csrf;
-        std::cout << "Paste your LEETCODE_SESSION cookie:\n> ";
+        std::cout << "Paste your LEETCODE_SESSION cookie (Dev Tools -> Application -> Cookies):\n> ";
         std::getline(std::cin, session);
-        std::cout << "Paste your csrftoken cookie:\n> ";
+        std::cout << "Paste your csrftoken cookie (Dev Tools -> Application -> Cookies):\n> ";
         std::getline(std::cin, csrf);
 
         config["leetcode_session"] = session;
