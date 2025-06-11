@@ -14,7 +14,7 @@ std::string html_to_text(const std::string& html); // assuming this is declared 
 void write_markdown_file(const std::string& path, const std::string& title, const std::string& markdown);
 void write_solution_file(const std::string& path, const std::string& code);
 
-std::string fetch_problem(const std::string& slug) {
+std::string fetch_problem(const std::string& slug, const std::string& lang_override) {
     // GraphQL query: fetch title, content, questionId, starter code
     nlohmann::json query = {
         {"query", R"(
@@ -61,23 +61,31 @@ std::string fetch_problem(const std::string& slug) {
     std::string markdown = html_to_text(question["content"]);
 
     // Find C++ starter code
-    std::string starter_code = "// Starter code not found.\n";
+    std::string preferred_lang = lang_override.empty() ? get_preferred_language() : lang_override;
+
+    std::string starter_code = "// No code found for " + preferred_lang + "\n";
     for (const auto& snippet : question["codeSnippets"]) {
-        if (snippet["langSlug"] == "cpp") {
+        if (snippet["langSlug"] == preferred_lang) {
             starter_code = snippet["code"];
             break;
         }
     }
 
+    // File extension based on lang
+    std::string ext = (preferred_lang == "python") ? ".py" :
+                      (preferred_lang == "java") ? ".java" : ".cpp";
+
+
     // Make safe folder path: problems/{id}. {title}/
     std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
-    std::string dir = get_problems_dir() + id + ". " + safe_title;
+    std::string dir = get_problems_dir() + "/" + id + ". " + safe_title;
     std::filesystem::create_directories(dir);
+
+    std::string solution_path = dir + "/solution" + ext;
 
     // Write files
     write_markdown_file(dir + "/README.md", title, markdown);
-    write_solution_file(dir + "/solution.cpp", starter_code);
-    std::string solution_path = dir + "/solution.cpp";
+    write_solution_file(solution_path, starter_code);
 
     return title + "\n\n" + markdown;
 }
@@ -93,7 +101,7 @@ std::string fetch_problem(const std::string& slug) {
 }
 
     void solve_problem(const std::string& slug) {
-    // Step 1: Fetch title + question ID from LeetCode
+    // Step 1: Query LeetCode to get the ID and Title
     nlohmann::json query = {
         {"query", R"(
             query getQuestionDetail($titleSlug: String!) {
@@ -123,26 +131,41 @@ std::string fetch_problem(const std::string& slug) {
     std::string title = question["title"];
     std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
 
-    // Step 2: Build full path to solution.cpp
+    // Step 2: Build the folder path
     std::string folder = get_problems_dir() + "/" + id + ". " + safe_title;
-    std::string solution_path = folder + "/solution.cpp";
 
-    // Step 3: Check file exists and launch
-    if (!std::filesystem::exists(solution_path)) {
-        std::cerr << "File not found: " << solution_path << "\n";
-        std::cerr << "Run: leetcli fetch " << slug << "\n";
+    if (!std::filesystem::exists(folder)) {
+        std::cerr << "Folder not found. Run: leetcli fetch " << slug << "\n";
         return;
     }
 
-    launch_in_editor(solution_path);
+    // Step 3: Try to find any known solution file
+    std::vector<std::string> extensions = {".cpp", ".py", ".java", ".js", ".cs"};
+    std::string solution_file;
+
+    for (const auto& ext : extensions) {
+        std::filesystem::path candidate = folder + "/solution" + ext;
+        if (std::filesystem::exists(candidate)) {
+            solution_file = candidate.string();
+            break;
+        }
+    }
+
+    // Step 4: Launch appropriate file or folder
+    if (!solution_file.empty()) {
+        launch_in_editor(solution_file);
+    } else {
+        std::cout << "No solution file found. Opening folder instead.\n";
+        launch_in_editor(folder);
+    }
 }
     void list_fetched_problems() {
-    std::string problems_dir = get_problems_dir();
+        std::string problems_dir = get_problems_dir();
 
-    if (!std::filesystem::exists(problems_dir)) {
-        std::cerr << "Problems directory not found: " << problems_dir << "\n";
-        return;
-    }
+        if (!std::filesystem::exists(problems_dir)) {
+            std::cerr << "Problems directory not found: " << problems_dir << "\n";
+            return;
+        }
 
     std::cout << "Fetched problems:\n";
 

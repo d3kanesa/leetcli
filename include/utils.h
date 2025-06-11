@@ -9,5 +9,6 @@ namespace leetcli {
     void write_solution_file(const std::string& path, const std::string& code);
     void launch_in_editor(const std::string& path);
     std::string get_problems_dir();
+    std::string get_preferred_language();
 
 }

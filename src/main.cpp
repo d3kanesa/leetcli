@@ -19,14 +19,26 @@ int main(int argc, char** argv) {
 
     if (command == "fetch") {
         if (argc < 3) {
-            std::cerr << "Usage: leetcli fetch <slug>\n";
+            std::cerr << "Usage: leetcli fetch <slug> [--lang=cpp|python|java]\n";
             return 1;
         }
+
         std::string slug = argv[2];
-        std::string problem = leetcli::fetch_problem(slug);
+        std::string lang_override;
+
+        // Check for --lang=xxx
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--lang=", 0) == 0) {
+                lang_override = arg.substr(7); // everything after --lang=
+            }
+        }
+
+        std::string problem = leetcli::fetch_problem(slug, lang_override); // pass override to function
         std::cout << problem << "\n";
         return 0;
     }
+
     if (command == "solve") {
         if (argc < 3) {
             std::cerr << "Usage: leetcli solve <slug>\n";
