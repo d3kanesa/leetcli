@@ -2,11 +2,11 @@
 #include "utils.h"
 #include <iostream>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     if (argc < 2) {
         std::cout << "Usage:\n"
-                  << "  leetcli init\n"
-                  << "  leetcli fetch <slug>\n";
+                << "  leetcli init\n"
+                << "  leetcli fetch <slug>\n";
         return 1;
     }
 
@@ -58,13 +58,12 @@ int main(int argc, char** argv) {
         return 0;
     }
     if (command == "submit") {
-        if (argc < 4) {
-            std::cerr << "Usage: leetcli submit <slug> <file>\n";
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli submit <slug>\n";
             return 1;
         }
         std::string slug = argv[2];
-        std::string filepath = argv[3];
-        leetcli::submit_solution(slug, filepath);
+        leetcli::submit_solution(slug);
         return 0;
     }
     std::cerr << "Unknown command: " << command << "\n";

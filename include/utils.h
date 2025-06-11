@@ -13,4 +13,5 @@ namespace leetcli {
     void set_session_cookie();
     std::string get_session_cookie();
     std::string get_csrf_token();
+    int get_solution_filepath(const std::string& slug, std::string& solution_file);
 }
