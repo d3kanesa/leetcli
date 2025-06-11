@@ -105,12 +105,16 @@ namespace leetcli {
         return line.empty() ? "" : "unknown";
     }
 
-    void solve_problem(const std::string &slug) {
+    void solve_problem(const std::string &slug, const std::string &lang_override) {
         std::string solution_file;
-        if (!get_solution_filepath(slug, solution_file)) {
-            launch_in_editor(solution_file);
+        int status;
+        if (!lang_override.empty()) {
+            status = get_solution_filepath(slug, solution_file, lang_override);
         } else {
-            std::cout << "No solution file found. Opening folder instead.\n";
+            status = get_solution_filepath(slug, solution_file);
+        }
+        if (!status) {
+            launch_in_editor(solution_file);
         }
     }
 
@@ -135,17 +139,22 @@ namespace leetcli {
         }
     }
 
-    void submit_solution(const std::string &slug) {
+    void submit_solution(const std::string &slug, const std::string &lang_override) {
         std::string session = get_session_cookie();
         std::string csrf = get_csrf_token();
         // Step 1: Read source code from file
         std::string solution_path;
-        get_solution_filepath(slug, solution_path);
+        if (!lang_override.empty()) {
+            get_solution_filepath(slug, solution_path, lang_override);
+        } else {
+            get_solution_filepath(slug, solution_path);
+        }
         std::ifstream file(solution_path);
         if (!file) {
-            std::cerr << "Error: Could not open file " << solution_path << "\n";
+            // std::cerr << "Error: Could not open file " << solution_path << "\n";
             return;
         }
+
         std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
         // Step 2: Query LeetCode to get questionId

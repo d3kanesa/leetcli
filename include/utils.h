@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 namespace leetcli {
     void init_problems_folder();
@@ -13,5 +14,5 @@ namespace leetcli {
     void set_session_cookie();
     std::string get_session_cookie();
     std::string get_csrf_token();
-    int get_solution_filepath(const std::string& slug, std::string& solution_file);
+    int get_solution_filepath(const std::string& slug, std::string& solution_file,  const std::optional<std::string> &language = std::nullopt);
 }
