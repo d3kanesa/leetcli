@@ -9,16 +9,18 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
+
 namespace leetcli {
+    std::string html_to_text(const std::string &html); // assuming this is declared elsewhere
+    void write_markdown_file(const std::string &path, const std::string &title, const std::string &markdown);
 
-std::string html_to_text(const std::string& html); // assuming this is declared elsewhere
-void write_markdown_file(const std::string& path, const std::string& title, const std::string& markdown);
-void write_solution_file(const std::string& path, const std::string& code);
+    void write_solution_file(const std::string &path, const std::string &code);
 
-std::string fetch_problem(const std::string& slug, const std::string& lang_override) {
-    // GraphQL query: fetch title, content, questionId, starter code
-    nlohmann::json query = {
-        {"query", R"(
+    std::string fetch_problem(const std::string &slug, const std::string &lang_override) {
+        // GraphQL query: fetch title, content, questionId, starter code
+        nlohmann::json query = {
+            {
+                "query", R"(
             query getQuestionDetail($titleSlug: String!) {
                 question(titleSlug: $titleSlug) {
                     title
@@ -31,86 +33,88 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
                     }
                 }
             }
-        )"},
-        {"variables", {{"titleSlug", slug}}}
-    };
+        )"
+            },
+            {"variables", {{"titleSlug", slug}}}
+        };
 
-    // Send POST request
-    cpr::Response r = cpr::Post(
-        cpr::Url{"https://leetcode.com/graphql"},
-        cpr::Header{{"Content-Type", "application/json"}},
-        cpr::Body{query.dump()}
-    );
+        // Send POST request
+        cpr::Response r = cpr::Post(
+            cpr::Url{"https://leetcode.com/graphql"},
+            cpr::Header{{"Content-Type", "application/json"}},
+            cpr::Body{query.dump()}
+        );
 
-    if (r.status_code != 200) {
-        std::cerr << "Failed to fetch problem: HTTP " << r.status_code << "\n";
-        return "Failed to fetch problem.";
-    }
-
-    // Parse response JSON
-    auto json = nlohmann::json::parse(r.text);
-
-    // Check for missing or null question field
-    if (!json.contains("data") || json["data"].is_null() || !json["data"].contains("question") || json["data"]["question"].is_null()) {
-        return "Problem not found. Check the title slug: \"" + slug + "\"";
-    }
-
-    auto question = json["data"]["question"];
-
-    std::string title = question["title"];
-    std::string id = question["questionId"];
-    std::string markdown = html_to_text(question["content"]);
-
-    // Find C++ starter code
-    std::string preferred_lang = lang_override.empty() ? get_preferred_language() : lang_override;
-
-    std::string starter_code = "// No code found for " + preferred_lang + "\n";
-    for (const auto& snippet : question["codeSnippets"]) {
-        if (snippet["langSlug"] == preferred_lang) {
-            starter_code = snippet["code"];
-            break;
+        if (r.status_code != 200) {
+            std::cerr << "Failed to fetch problem: HTTP " << r.status_code << "\n";
+            return "Failed to fetch problem.";
         }
+
+        // Parse response JSON
+        auto json = nlohmann::json::parse(r.text);
+
+        // Check for missing or null question field
+        if (!json.contains("data") || json["data"].is_null() || !json["data"].contains("question") || json["data"][
+                "question"].is_null()) {
+            return "Problem not found. Check the title slug: \"" + slug + "\"";
+        }
+
+        auto question = json["data"]["question"];
+
+        std::string title = question["title"];
+        std::string id = question["questionId"];
+        std::string markdown = html_to_text(question["content"]);
+
+        // Find C++ starter code
+        std::string preferred_lang = lang_override.empty() ? get_preferred_language() : lang_override;
+
+        std::string starter_code = "// No code found for " + preferred_lang + "\n";
+        for (const auto &snippet: question["codeSnippets"]) {
+            if (snippet["langSlug"] == preferred_lang) {
+                starter_code = snippet["code"];
+                break;
+            }
+        }
+
+        // File extension based on lang
+        std::string ext = (preferred_lang == "python") ? ".py" : (preferred_lang == "java") ? ".java" : ".cpp";
+
+
+        // Make safe folder path: problems/{id}. {title}/
+        std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
+        std::string dir = get_problems_dir() + "/" + id + ". " + safe_title;
+        std::filesystem::create_directories(dir);
+
+        std::string solution_path = dir + "/solution" + ext;
+
+        // Write files
+        write_markdown_file(dir + "/README.md", title, markdown);
+        write_solution_file(solution_path, starter_code);
+
+        return title + "\n\n" + markdown;
     }
 
-    // File extension based on lang
-    std::string ext = (preferred_lang == "python") ? ".py" :
-                      (preferred_lang == "java") ? ".java" : ".cpp";
+    std::string read_question_id_from_readme(const std::string &path) {
+        std::ifstream in(path);
+        if (!in) return "";
 
+        std::string line;
+        std::getline(in, line); // expect "# Title"
+        std::getline(in, line); // blank line
+        std::getline(in, line); // content starts here
+        return line.empty() ? "" : "unknown";
+    }
 
-    // Make safe folder path: problems/{id}. {title}/
-    std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
-    std::string dir = get_problems_dir() + "/" + id + ". " + safe_title;
-    std::filesystem::create_directories(dir);
-
-    std::string solution_path = dir + "/solution" + ext;
-
-    // Write files
-    write_markdown_file(dir + "/README.md", title, markdown);
-    write_solution_file(solution_path, starter_code);
-
-    return title + "\n\n" + markdown;
-}
-    std::string read_question_id_from_readme(const std::string& path) {
-    std::ifstream in(path);
-    if (!in) return "";
-
-    std::string line;
-    std::getline(in, line); // expect "# Title"
-    std::getline(in, line); // blank line
-    std::getline(in, line); // content starts here
-    return line.empty() ? "" : "unknown";
-}
-
-    void solve_problem(const std::string& slug) {
+    void solve_problem(const std::string &slug) {
         std::string solution_file;
         if (!get_solution_filepath(slug, solution_file)) {
             launch_in_editor(solution_file);
         } else {
             std::cout << "No solution file found. Opening folder instead.\n";
         }
-}
-    void list_fetched_problems() {
+    }
 
+    void list_fetched_problems() {
         std::string problems_dir = get_problems_dir();
 
         if (!std::filesystem::exists(problems_dir)) {
@@ -120,7 +124,7 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
 
         std::cout << "Fetched problems:\n";
 
-        for (const auto& entry : std::filesystem::directory_iterator(problems_dir)) {
+        for (const auto &entry: std::filesystem::directory_iterator(problems_dir)) {
             if (!entry.is_directory()) continue;
 
             std::string folder_name = entry.path().filename().string();
@@ -131,7 +135,7 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
         }
     }
 
-    void submit_solution(const std::string& slug) {
+    void submit_solution(const std::string &slug) {
         std::string session = get_session_cookie();
         std::string csrf = get_csrf_token();
         // Step 1: Read source code from file
@@ -146,13 +150,15 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
 
         // Step 2: Query LeetCode to get questionId
         nlohmann::json query = {
-            {"query", R"(
+            {
+                "query", R"(
                 query getQuestionDetail($titleSlug: String!) {
                     question(titleSlug: $titleSlug) {
                         questionId
                     }
                 }
-            )"},
+            )"
+            },
             {"variables", {{"titleSlug", slug}}}
         };
 
@@ -210,7 +216,7 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
         } catch (...) {
             std::cerr << "Invalid JSON. Raw response:\n" << submit_resp.text << "\n";
             return;
-    }
+        }
 
         // Step 5: Poll submission result
         std::cout << "Waiting for result...\n";
@@ -235,7 +241,7 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
 
                 if (status_msg == "Accepted") {
                     std::cout << "✅ Accepted! Runtime: " << result_json["status_runtime"]
-                              << ", Memory: " << result_json["status_memory"] << "\n";
+                            << ", Memory: " << result_json["status_memory"] << "\n";
                 } else {
                     std::cout << "❌ " << status_msg << "\n";
                     if (result_json.contains("compile_error")) {
@@ -251,7 +257,8 @@ std::string fetch_problem(const std::string& slug, const std::string& lang_overr
                         std::cout << "Your Output:      " << result_json["code_output"] << "\n";
 
                     if (result_json.contains("total_correct") && result_json.contains("total_testcases"))
-                        std::cout << "Testcases Passed: " << result_json["total_correct"] << " / " << result_json["total_testcases"] << "\n";
+                        std::cout << "Testcases Passed: " << result_json["total_correct"] << " / " << result_json[
+                            "total_testcases"] << "\n";
 
                     std::cout << "\n🔍 View full details:\n";
                     std::cout << "   https://leetcode.com/submissions/detail/" << submission_id << "/\n";

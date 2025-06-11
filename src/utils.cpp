@@ -7,11 +7,9 @@
 #include <cpr/cpr.h>
 
 namespace leetcli {
-
-
     static std::filesystem::path get_home() {
-        if (auto* h = std::getenv("HOME"); h && *h) return h;
-        if (auto* u = std::getenv("USERPROFILE"); u && *u) return u;
+        if (auto *h = std::getenv("HOME"); h && *h) return h;
+        if (auto *u = std::getenv("USERPROFILE"); u && *u) return u;
         std::cerr << "Fatal: cannot determine home directory.\n";
         std::exit(1);
     }
@@ -27,7 +25,7 @@ namespace leetcli {
         nlohmann::json config;
         in >> config;
         return config.value("lang", "cpp"); // fallback to cpp
-}
+    }
 
 
     std::string get_problems_dir() {
@@ -79,7 +77,7 @@ namespace leetcli {
         std::cout << "leetcli initialized.\nProblems will be saved to:\n  " << default_path << "\n";
     }
 
-    std::string html_to_text(const std::string& html) {
+    std::string html_to_text(const std::string &html) {
         std::string text = html;
         text = std::regex_replace(text, std::regex("<h1[^>]*>"), "# ");
         text = std::regex_replace(text, std::regex("<h2[^>]*>"), "## ");
@@ -108,7 +106,7 @@ namespace leetcli {
         return text;
     }
 
-    void write_markdown_file(const std::string& path, const std::string& title, const std::string& markdown) {
+    void write_markdown_file(const std::string &path, const std::string &title, const std::string &markdown) {
         std::ofstream out(path);
         if (!out) {
             std::cerr << "Failed to write markdown: " << path << "\n";
@@ -118,7 +116,7 @@ namespace leetcli {
         out.close();
     }
 
-    void write_solution_file(const std::string& path, const std::string& code) {
+    void write_solution_file(const std::string &path, const std::string &code) {
         if (std::filesystem::exists(path)) {
             return;
         }
@@ -129,13 +127,12 @@ namespace leetcli {
         }
         out << code << "\n";
         out.close();
-
-
     }
-    void launch_in_editor(const std::string& path) {
-            std::string cmd = "vim";
-            cmd += " \"" + path + "\"";
-            std::system(cmd.c_str());
+
+    void launch_in_editor(const std::string &path) {
+        std::string cmd = "vim";
+        cmd += " \"" + path + "\"";
+        std::system(cmd.c_str());
     }
 
     void set_session_cookie() {
@@ -183,6 +180,7 @@ namespace leetcli {
 
         return config["leetcode_session"];
     }
+
     std::string get_csrf_token() {
         std::filesystem::path config_path = get_home() / ".leetcli/config.json";
 
@@ -197,17 +195,20 @@ namespace leetcli {
 
         return config["csrf_token"];
     }
-    int get_solution_filepath(const std::string& slug, std::string& solution_file) {
+
+    int get_solution_filepath(const std::string &slug, std::string &solution_file) {
         // Step 1: Query LeetCode to get the ID and Title
         nlohmann::json query = {
-            {"query", R"(
+            {
+                "query", R"(
             query getQuestionDetail($titleSlug: String!) {
                 question(titleSlug: $titleSlug) {
                     title
                     questionId
                 }
             }
-        )"},
+        )"
+            },
             {"variables", {{"titleSlug", slug}}}
         };
 
@@ -239,7 +240,7 @@ namespace leetcli {
         // Step 3: Try to find any known solution file
         std::vector<std::string> extensions = {".cpp", ".py", ".java", ".js", ".cs"};
 
-        for (const auto& ext : extensions) {
+        for (const auto &ext: extensions) {
             std::filesystem::path candidate = folder + "/solution" + ext;
             if (std::filesystem::exists(candidate)) {
                 solution_file = candidate.string();
