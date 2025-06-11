@@ -135,6 +135,65 @@ namespace leetcli {
             std::string cmd = "vim";
             cmd += " \"" + path + "\"";
             std::system(cmd.c_str());
+    }
+
+    void set_session_cookie() {
+        std::filesystem::path config_path = get_home() / ".leetcli/config.json";
+
+        if (!std::filesystem::exists(config_path)) {
+            std::cerr << "Run `leetcli init` first.\n";
+            std::exit(1);
         }
 
+        std::ifstream in(config_path);
+        nlohmann::json config;
+        in >> config;
+
+        std::string session, csrf;
+        std::cout << "Paste your LEETCODE_SESSION cookie (Dev Tools -> Application -> Cookies):\n> ";
+        std::getline(std::cin, session);
+        std::cout << "Paste your csrftoken cookie (Dev Tools -> Application -> Cookies):\n> ";
+        std::getline(std::cin, csrf);
+
+        config["leetcode_session"] = session;
+        config["csrf_token"] = csrf;
+
+        std::ofstream out(config_path);
+        out << config.dump(4);
+        std::cout << "Session & CSRF token saved.\n";
+    }
+
+    std::string get_session_cookie() {
+        std::filesystem::path config_path = get_home() / ".leetcli/config.json";
+
+        if (!std::filesystem::exists(config_path)) {
+            std::cerr << "Error: config not found. Run `leetcli init` first.\n";
+            std::exit(1);
+        }
+
+        std::ifstream in(config_path);
+        nlohmann::json config;
+        in >> config;
+
+        if (!config.contains("leetcode_session")) {
+            std::cerr << "Error: No session cookie set. Run `leetcli login`.\n";
+            std::exit(1);
+        }
+
+        return config["leetcode_session"];
+    }
+    std::string get_csrf_token() {
+        std::filesystem::path config_path = get_home() / ".leetcli/config.json";
+
+        std::ifstream in(config_path);
+        nlohmann::json config;
+        in >> config;
+
+        if (!config.contains("csrf_token")) {
+            std::cerr << "No CSRF token found. Run `leetcli login`.\n";
+            std::exit(1);
+        }
+
+        return config["csrf_token"];
+    }
 } // namespace leetcli
