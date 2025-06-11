@@ -118,6 +118,9 @@ namespace leetcli {
     }
 
     void write_solution_file(const std::string& path, const std::string& code) {
+        if (std::filesystem::exists(path)) {
+            return;
+        }
         std::ofstream out(path);
         if (!out) {
             std::cerr << "Failed to write solution: " << path << "\n";
