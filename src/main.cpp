@@ -66,6 +66,14 @@ int main(int argc, char **argv) {
         leetcli::submit_solution(slug);
         return 0;
     }
+    if (command == "run") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli run <slug>\n";
+            return 1;
+        }
+        leetcli::run_tests(argv[2]);
+        return 0;
+    }
     std::cerr << "Unknown command: " << command << "\n";
     return 1;
 }

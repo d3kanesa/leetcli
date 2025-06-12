@@ -7,4 +7,7 @@ namespace leetcli {
     void solve_problem(const std::string& slug);
     void list_fetched_problems();
     void submit_solution(const std::string& slug);
+    void run_tests(const std::string& slug);
+    void run_problem(const std::string& slug, const std::string& lang, const std::string& question_id,
+        const std::string& code, const std::string& test_input, const std::string& session, const std::string& csrf);
 }
