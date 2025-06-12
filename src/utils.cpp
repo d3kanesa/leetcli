@@ -7,6 +7,94 @@
 #include <cpr/cpr.h>
 
 namespace leetcli {
+    void fetch_testcases(const std::string& slug, const std::string& folder_path) {
+        std::string session = get_session_cookie();
+        std::string csrf = get_csrf_token();
+
+        // GraphQL query to extract exampleTestcaseList
+        nlohmann::json request_body = {
+            {"operationName", "consolePanelConfig"},
+            {"query", R"(
+            query consolePanelConfig($titleSlug: String!) {
+                question(titleSlug: $titleSlug) {
+                    exampleTestcaseList
+                }
+            })"},
+            {"variables", {{"titleSlug", slug}}}
+        };
+
+        cpr::Response response = cpr::Post(
+            cpr::Url{"https://leetcode.com/graphql"},
+            cpr::Header{
+                {"Content-Type", "application/json"},
+                {"x-csrftoken", csrf},
+                {"Cookie", "LEETCODE_SESSION=" + session + "; csrftoken=" + csrf},
+                {"Referer", "https://leetcode.com/problems/" + slug + "/"}
+            },
+            cpr::Body{request_body.dump()}
+        );
+
+        if (response.status_code != 200) {
+            std::cerr << "❌ Failed to fetch testcases: " << response.status_code << "\n";
+            return;
+        }
+
+        auto json = nlohmann::json::parse(response.text);
+        auto testcases_json = json["data"]["question"]["exampleTestcaseList"];
+        if (!testcases_json.is_array()) {
+            std::cerr << "❌ No testcases found in response.\n";
+            return;
+        }
+
+        // Create file path and directory
+        std::filesystem::path dir = folder_path;
+        std::filesystem::create_directories(dir);
+        std::ofstream outfile(dir / "testcases.txt");
+
+        for (size_t i = 0; i < testcases_json.size(); ++i) {
+            outfile << testcases_json[i].get<std::string>();
+            if (i + 1 != testcases_json.size())
+                outfile << "\n---\n";  // separator between test cases
+        }
+
+        std::cout << "✅ Saved testcases to " << (dir / "testcases.txt") << "\n";
+    }
+    std::string get_question_id(const std::string& slug, const std::string& session, const std::string& csrf) {
+        nlohmann::json payload = {
+            {"operationName", "getQuestionDetail"},
+            {"query", R"(
+            query getQuestionDetail($titleSlug: String!) {
+                question(titleSlug: $titleSlug) {
+                    questionId
+                }
+            }
+        )"},
+            {"variables", {{"titleSlug", slug}}}
+        };
+
+        cpr::Response r = cpr::Post(
+            cpr::Url{"https://leetcode.com/graphql"},
+            cpr::Header{
+                {"Content-Type", "application/json"},
+                {"x-csrftoken", csrf},
+                {"Cookie", "LEETCODE_SESSION=" + session + "; csrftoken=" + csrf}
+            },
+            cpr::Body{payload.dump()}
+        );
+
+        if (r.status_code != 200) throw std::runtime_error("Failed to get questionId");
+        auto json = nlohmann::json::parse(r.text);
+        return json["data"]["question"]["questionId"];
+    }
+
+    std::string get_file_extension(const std::string& filename) {
+        size_t dot_pos = filename.rfind('.');
+        if (dot_pos == std::string::npos || dot_pos == filename.length() - 1) {
+            return ""; // No extension or empty extension
+        }
+        return filename.substr(dot_pos + 1);
+    }
+
     static std::filesystem::path get_home() {
         if (auto *h = std::getenv("HOME"); h && *h) return h;
         if (auto *u = std::getenv("USERPROFILE"); u && *u) return u;
@@ -196,6 +284,46 @@ namespace leetcli {
         return config["csrf_token"];
     }
 
+    int get_solution_folder(const std::string &slug, std::string &folder_path) {
+        // Step 1: Query LeetCode to get the ID and Title
+        nlohmann::json query = {
+            {
+                "query", R"(
+            query getQuestionDetail($titleSlug: String!) {
+                question(titleSlug: $titleSlug) {
+                    title
+                    questionId
+                }
+            }
+        )"
+            },
+            {"variables", {{"titleSlug", slug}}}
+        };
+
+        cpr::Response r = cpr::Post(
+            cpr::Url{"https://leetcode.com/graphql"},
+            cpr::Header{{"Content-Type", "application/json"}},
+            cpr::Body{query.dump()}
+        );
+
+        if (r.status_code != 200) {
+            std::cerr << "Failed to query problem info.\n";
+            return 1;
+        }
+
+        auto json = nlohmann::json::parse(r.text);
+        auto question = json["data"]["question"];
+        std::string id = question["questionId"];
+        std::string title = question["title"];
+        std::string safe_title = std::regex_replace(title, std::regex("[\\\\/:*?\"<>|]"), "");
+
+        // Step 2: Build the folder path
+        std::string folder = get_problems_dir() + "/" + id + ". " + safe_title;
+
+        folder_path = folder;
+        return 0;
+    }
+
     int get_solution_filepath(const std::string &slug, std::string &solution_file, const std::optional<std::string> &language) {
         // Step 1: Query LeetCode to get the ID and Title
         nlohmann::json query = {
@@ -278,4 +406,34 @@ namespace leetcli {
         std::cout << solution_file << "\n";
         return 0;
     }
+    // Loads testcases from testcases.txt and returns them as a vector of strings
+    std::vector<std::string> load_testcases(const std::string& filepath) {
+        std::ifstream file(filepath);
+        std::vector<std::string> testcases;
+
+        if (!file) {
+            std::cerr << "Could not open " << filepath << "\n";
+            return testcases;
+        }
+
+        std::stringstream buffer;
+        buffer << file.rdbuf();  // Read the whole file into a string
+        std::string content = buffer.str();
+
+        size_t start = 0;
+        size_t end;
+
+        while ((end = content.find("\n---\n", start)) != std::string::npos) {
+            testcases.push_back(content.substr(start, end - start));
+            start = end + 5;  // length of "\n---\n"
+        }
+
+        // Last test case (or only one if no separator)
+        if (start < content.size()) {
+            testcases.push_back(content.substr(start));
+        }
+
+        return testcases;
+    }
+
 } // namespace leetcli
