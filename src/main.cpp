@@ -44,8 +44,16 @@ int main(int argc, char **argv) {
             std::cerr << "Usage: leetcli solve <slug>\n";
             return 1;
         }
+        std::string lang_override;
+
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--lang=", 0) == 0) {
+                lang_override = arg.substr(7);
+            }
+        }
         std::string slug = argv[2];
-        leetcli::solve_problem(slug);
+        leetcli::solve_problem(slug, lang_override);
         return 0;
     }
     if (command == "list") {
@@ -59,11 +67,20 @@ int main(int argc, char **argv) {
     }
     if (command == "submit") {
         if (argc < 3) {
-            std::cerr << "Usage: leetcli submit <slug>\n";
+            std::cerr << "Usage: leetcli submit <slug> [--lang=cpp|python|java]\n";
             return 1;
         }
         std::string slug = argv[2];
-        leetcli::submit_solution(slug);
+        std::string lang_override;
+
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--lang=", 0) == 0) {
+                lang_override = arg.substr(7);
+            }
+        }
+
+        leetcli::submit_solution(slug, lang_override);
         return 0;
     }
     if (command == "run") {

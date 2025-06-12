@@ -324,18 +324,18 @@ namespace leetcli {
         return 0;
     }
 
-    int get_solution_filepath(const std::string &slug, std::string &solution_file) {
+    int get_solution_filepath(const std::string &slug, std::string &solution_file, const std::optional<std::string> &language) {
         // Step 1: Query LeetCode to get the ID and Title
         nlohmann::json query = {
             {
                 "query", R"(
-            query getQuestionDetail($titleSlug: String!) {
-                question(titleSlug: $titleSlug) {
-                    title
-                    questionId
-                }
-            }
-        )"
+                    query getQuestionDetail($titleSlug: String!) {
+                        question(titleSlug: $titleSlug) {
+                            title
+                            questionId
+                        }
+                    }
+                )"
             },
             {"variables", {{"titleSlug", slug}}}
         };
@@ -365,17 +365,45 @@ namespace leetcli {
             return 1;
         }
 
-        // Step 3: Try to find any known solution file
-        std::vector<std::string> extensions = {".cpp", ".py", ".java", ".js", ".cs"};
+        // Step 3: Map supported languages to file extensions
+        std::map<std::string, std::string> lang_to_ext = {
+            {"cpp", ".cpp"},
+            {"python", ".py"},
+            {"java", ".java"},
+            {"javascript", ".js"},
+            {"csharp", ".cs"}
+        };
 
-        for (const auto &ext: extensions) {
-            std::filesystem::path candidate = folder + "/solution" + ext;
-            if (std::filesystem::exists(candidate)) {
-                solution_file = candidate.string();
-                break;
+        std::string lang;
+        if (language.has_value()) {
+            lang = language.value();
+        } else {
+            // Load config to get default language
+            std::filesystem::path config_path = std::filesystem::path(get_home()) / ".leetcli/config.json";
+            std::ifstream in(config_path);
+            if (!in) {
+                std::cerr << "Could not read config file at " << config_path << "\n";
+                return 1;
             }
+            nlohmann::json config;
+            in >> config;
+            lang = config["lang"];
+        }
+        if (lang_to_ext.find(lang) == lang_to_ext.end()) {
+            std::cerr << "Unsupported language: " << lang << "\n";
+            return 1;
         }
 
+        std::string ext = lang_to_ext[lang];
+        std::filesystem::path candidate = folder + "/solution" + ext;
+
+        if (!std::filesystem::exists(candidate)) {
+            std::cerr << "Solution file not found for language '" << lang << "' in: " << candidate << "\n";
+            return 1;
+        }
+
+        solution_file = candidate.string();
+        std::cout << solution_file << "\n";
         return 0;
     }
     // Loads testcases from testcases.txt and returns them as a vector of strings
