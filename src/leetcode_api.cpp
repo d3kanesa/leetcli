@@ -14,6 +14,126 @@ namespace leetcli {
 
     void write_solution_file(const std::string &path, const std::string &code);
 
+    void analyze_runtime(const std::string& slug) {
+    std::string path;
+    get_solution_filepath(slug, path);
+
+    std::ifstream file(path);
+    if (!file) {
+        std::cerr << "❌ Could not open solution file for " << slug << "\n";
+        return;
+    }
+
+    std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    std::string api_key = get_gemini_key(); // Should be renamed for Gemini if needed
+
+    if (api_key.empty()) {
+        std::cerr << "❌ No Gemini API key found. Use `leetcli config set-gemini-key <your-key>` first.\n";
+        return;
+    }
+
+    // Prompt for Gemini
+    std::string prompt =
+        "Analyze the time and space complexity of the following code and return a JSON object like:\n"
+        "{ \"time\": \"O(n)\", \"space\": \"O(1)\" }\n"
+        "If the code is invalid or empty, return:\n"
+        "{ \"error\": \"Invalid or empty code\" }\n\n"
+        "Code:\n" + code;
+
+    // Construct Gemini request payload
+    nlohmann::json payload = {
+        {"contents", {{
+            {"parts", {{
+                {"text", prompt}
+            }}}
+        }}},
+        {"generationConfig", {
+            {"responseMimeType", "application/json"},
+            {"responseSchema", {
+                {"type", "OBJECT"},
+                {"properties", {
+                    {"time", {{"type", "STRING"}}},
+                    {"space", {{"type", "STRING"}}},
+                    {"error", {{"type", "STRING"}}}
+                }},
+                {"required", {"time", "space"}}
+            }}
+        }}
+    };
+
+    std::string url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key;
+
+    cpr::Response r = cpr::Post(
+        cpr::Url{url},
+        cpr::Header{{"Content-Type", "application/json"}},
+        cpr::Body{payload.dump()}
+    );
+
+    if (r.status_code != 200) {
+        std::cerr << "❌ Gemini API call failed: " << r.status_code << "\n" << r.text << "\n";
+        return;
+    }
+
+    nlohmann::json response_json = nlohmann::json::parse(r.text);
+    try {
+        nlohmann::json part = response_json["candidates"][0]["content"]["parts"][0];
+        std::string raw_json = part["text"].get<std::string>();
+
+        nlohmann::json inner = nlohmann::json::parse(raw_json);
+
+        std::cout << "\n🧠 AI Runtime Analysis (Experimantal):\n";
+        if (inner.contains("error")) {
+            std::cout << "  ⚠️  " << inner["error"] << "\n";
+        } else {
+            std::cout << "  Time:  " << inner["time"] << "\n";
+            std::cout << "  Space: " << inner["space"] << "\n";
+        }
+    } catch (const std::exception &e) {
+        std::cerr << "Failed to parse inner JSON: " << e.what() << "\n";
+        std::cerr << "Raw text:\n" << r.text << "\n";
+    }
+}
+
+
+
+void handle_config_command(const std::vector<std::string> &args) {
+    if (args.size() == 3 && args[1] == "set-gemini-key") {
+            set_gemini_key(args[2]);
+        } else {
+            std::cerr << "Usage: leetcli config set-gemini-key <your-api-key>\n";
+        }
+    }
+
+
+    std::string get_daily_question_slug() {
+        const std::string& session = get_session_cookie();
+        const std::string& csrf = get_csrf_token();
+        const std::string graphql_url = "https://leetcode.com/graphql";
+
+        std::string query = R"({
+        "query": "query questionOfToday { activeDailyCodingChallengeQuestion { question { titleSlug } } }"
+    })";
+
+        auto response = cpr::Post(
+            cpr::Url{graphql_url},
+            cpr::Header{
+                {"Content-Type", "application/json"},
+                {"x-csrftoken", csrf},
+                {"Cookie", "LEETCODE_SESSION=" + session + "; csrftoken=" + csrf},
+                {"Referer", "https://leetcode.com/problemset/all/"}
+            },
+            cpr::Body{query}
+        );
+
+        if (response.status_code != 200) {
+            std::cerr << "Failed to fetch daily question: " << response.status_code << "\n" << response.text << std::endl;
+            return "";
+        }
+
+        auto json = nlohmann::json::parse(response.text);
+        return json["data"]["activeDailyCodingChallengeQuestion"]["question"]["titleSlug"];
+    }
+
     std::string fetch_problem(const std::string &slug, const std::string &lang_override) {
         // GraphQL query: fetch title, content, questionId, starter code
         nlohmann::json query = {
