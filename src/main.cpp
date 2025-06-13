@@ -3,6 +3,7 @@
 #include <iostream>
 
 int main(int argc, char **argv) {
+    std::vector<std::string> args(argv + 1, argv + argc);
     if (argc < 2) {
         std::cout << "Usage:\n"
                 << "  leetcli init\n"
@@ -18,12 +19,18 @@ int main(int argc, char **argv) {
     }
 
     if (command == "fetch") {
+
         if (argc < 3) {
             std::cerr << "Usage: leetcli fetch <slug> [--lang=cpp|python|java]\n";
             return 1;
         }
 
         std::string slug = argv[2];
+
+        if (slug == "daily") {
+            slug = leetcli::get_daily_question_slug();
+        }
+
         std::string lang_override;
 
         // Check for --lang=xxx
@@ -90,7 +97,19 @@ int main(int argc, char **argv) {
         }
         leetcli::run_tests(argv[2]);
         return 0;
+    } if (command == "config") {
+        leetcli::handle_config_command(args);
+        return 0;
     }
+    if (command == "runtime") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli runtime <slug>\n";
+            return 1;
+        }
+        leetcli::analyze_runtime(argv[2]);
+        return 0;
+    }
+
     std::cerr << "Unknown command: " << command << "\n";
     return 1;
 }

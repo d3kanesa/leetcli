@@ -6,6 +6,8 @@
 #include <vector>
 
 namespace leetcli {
+    void set_gemini_key(const std::string& key);
+    std::string get_gemini_key();
     static std::filesystem::path get_home();
     std::string get_file_extension(const std::string& filename);
     void init_problems_folder();

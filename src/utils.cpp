@@ -7,6 +7,37 @@
 #include <cpr/cpr.h>
 
 namespace leetcli {
+
+    void set_gemini_key(const std::string& key) {
+        nlohmann::json config;
+        std::string path = std::filesystem::path(get_home()) / ".leetcli/config.json";
+
+        // If config already exists, preserve other values
+        if (std::ifstream in(path); in) {
+            in >> config;
+        }
+
+        config["gemini_key"] = key;
+
+        std::ofstream out(path);
+        out << config.dump(2);
+        std::cout << "✅ Gemini key saved to " << path << "\n";
+    }
+
+    std::string get_gemini_key() {
+        std::ifstream in(std::filesystem::path(get_home()) / ".leetcli/config.json");
+        if (!in) throw std::runtime_error("No config file found");
+
+        nlohmann::json config;
+        in >> config;
+
+        if (!config.contains("gemini_key")) {
+            throw std::runtime_error("Gamini key not set in config");
+        }
+
+        return config["gemini_key"];
+    }
+
     void fetch_testcases(const std::string& slug, const std::string& folder_path) {
         std::string session = get_session_cookie();
         std::string csrf = get_csrf_token();
