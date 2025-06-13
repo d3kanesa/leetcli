@@ -14,91 +14,95 @@ namespace leetcli {
 
     void write_solution_file(const std::string &path, const std::string &code);
 
-    void analyze_runtime(const std::string& slug) {
-    std::string path;
-    get_solution_filepath(slug, path);
-
-    std::ifstream file(path);
-    if (!file) {
-        std::cerr << "❌ Could not open solution file for " << slug << "\n";
-        return;
-    }
-
-    std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    std::string api_key = get_gemini_key(); // Should be renamed for Gemini if needed
-
-    if (api_key.empty()) {
-        std::cerr << "❌ No Gemini API key found. Use `leetcli config set-gemini-key <your-key>` first.\n";
-        return;
-    }
-
-    // Prompt for Gemini
-    std::string prompt =
-        "Analyze the time and space complexity of the following code and return a JSON object like:\n"
-        "{ \"time\": \"O(n)\", \"space\": \"O(1)\" }\n"
-        "If the code is invalid or empty, return:\n"
-        "{ \"error\": \"Invalid or empty code\" }\n\n"
-        "Code:\n" + code;
-
-    // Construct Gemini request payload
-    nlohmann::json payload = {
-        {"contents", {{
-            {"parts", {{
-                {"text", prompt}
-            }}}
-        }}},
-        {"generationConfig", {
-            {"responseMimeType", "application/json"},
-            {"responseSchema", {
-                {"type", "OBJECT"},
-                {"properties", {
-                    {"time", {{"type", "STRING"}}},
-                    {"space", {{"type", "STRING"}}},
-                    {"error", {{"type", "STRING"}}}
-                }},
-                {"required", {"time", "space"}}
-            }}
-        }}
-    };
-
-    std::string url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key;
-
-    cpr::Response r = cpr::Post(
-        cpr::Url{url},
-        cpr::Header{{"Content-Type", "application/json"}},
-        cpr::Body{payload.dump()}
-    );
-
-    if (r.status_code != 200) {
-        std::cerr << "❌ Gemini API call failed: " << r.status_code << "\n" << r.text << "\n";
-        return;
-    }
-
-    nlohmann::json response_json = nlohmann::json::parse(r.text);
-    try {
-        nlohmann::json part = response_json["candidates"][0]["content"]["parts"][0];
-        std::string raw_json = part["text"].get<std::string>();
-
-        nlohmann::json inner = nlohmann::json::parse(raw_json);
-
-        std::cout << "\n🧠 AI Runtime Analysis (Experimantal):\n";
-        if (inner.contains("error")) {
-            std::cout << "  ⚠️  " << inner["error"] << "\n";
+    void analyze_runtime(const std::string& slug, const std::string &lang_override) {
+        std::string path;
+        if (!lang_override.empty()) {
+            get_solution_filepath(slug, path, lang_override);
         } else {
-            std::cout << "  Time:  " << inner["time"] << "\n";
-            std::cout << "  Space: " << inner["space"] << "\n";
+            get_solution_filepath(slug, path);
         }
-    } catch (const std::exception &e) {
-        std::cerr << "Failed to parse inner JSON: " << e.what() << "\n";
-        std::cerr << "Raw text:\n" << r.text << "\n";
+
+            std::ifstream file(path);
+            if (!file) {
+                std::cerr << "❌ Could not open solution file for " << slug << "\n";
+                return;
+            }
+
+            std::string code((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+            std::string api_key = get_gemini_key(); // Should be renamed for Gemini if needed
+
+            if (api_key.empty()) {
+                std::cerr << "❌ No Gemini API key found. Use `leetcli config set-gemini-key <your-key>` first.\n";
+                return;
+            }
+
+            // Prompt for Gemini
+            std::string prompt =
+                "Analyze the time and space complexity of the following code and return a JSON object like:\n"
+                "{ \"time\": \"O(n)\", \"space\": \"O(1)\" }\n"
+                "If the code is invalid or empty, return:\n"
+                "{ \"error\": \"Invalid or empty code\" }\n\n"
+                "Code:\n" + code;
+
+            // Construct Gemini request payload
+            nlohmann::json payload = {
+                {"contents", {{
+                    {"parts", {{
+                        {"text", prompt}
+                    }}}
+                }}},
+                {"generationConfig", {
+                    {"responseMimeType", "application/json"},
+                    {"responseSchema", {
+                        {"type", "OBJECT"},
+                        {"properties", {
+                            {"time", {{"type", "STRING"}}},
+                            {"space", {{"type", "STRING"}}},
+                            {"error", {{"type", "STRING"}}}
+                        }},
+                        {"required", {"time", "space"}}
+                    }}
+                }}
+            };
+
+            std::string url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key;
+
+            cpr::Response r = cpr::Post(
+                cpr::Url{url},
+                cpr::Header{{"Content-Type", "application/json"}},
+                cpr::Body{payload.dump()}
+            );
+
+            if (r.status_code != 200) {
+                std::cerr << "❌ Gemini API call failed: " << r.status_code << "\n" << r.text << "\n";
+                return;
+            }
+
+            nlohmann::json response_json = nlohmann::json::parse(r.text);
+            try {
+                nlohmann::json part = response_json["candidates"][0]["content"]["parts"][0];
+                std::string raw_json = part["text"].get<std::string>();
+
+                nlohmann::json inner = nlohmann::json::parse(raw_json);
+
+                std::cout << "\n🧠 AI Runtime Analysis (Experimantal):\n";
+                if (inner.contains("error")) {
+                    std::cout << "  ⚠️  " << inner["error"] << "\n";
+                } else {
+                    std::cout << "  Time:  " << inner["time"] << "\n";
+                    std::cout << "  Space: " << inner["space"] << "\n";
+                }
+            } catch (const std::exception &e) {
+                std::cerr << "Failed to parse inner JSON: " << e.what() << "\n";
+                std::cerr << "Raw text:\n" << r.text << "\n";
+            }
     }
-}
 
 
 
-void handle_config_command(const std::vector<std::string> &args) {
-    if (args.size() == 3 && args[1] == "set-gemini-key") {
-            set_gemini_key(args[2]);
+    void handle_config_command(const std::vector<std::string> &args) {
+        if (args.size() == 3 && args[1] == "set-gemini-key") {
+                set_gemini_key(args[2]);
         } else {
             std::cerr << "Usage: leetcli config set-gemini-key <your-api-key>\n";
         }
@@ -450,22 +454,53 @@ void handle_config_command(const std::vector<std::string> &args) {
         }
 
         // Pretty-print final result
-        std::cout << "\n🟩 Run Result\n";
+        std::cout << "\n≡ƒƒ⌐ Run Result\n";
         std::cout << "------------------------\n";
-        std::cout << "Status:        " << result["status_msg"] << "\n";
-        std::cout << "Correct:       " << (result["correct_answer"].get<bool>() ? "✅ Yes" : "❌ No") << "\n";
-        std::cout << "Your Output:   " << result["code_answer"][0] << "\n";
-        std::cout << "Expected:      " << result["expected_code_answer"][0] << "\n";
-        std::cout << "Runtime:       " << result["status_runtime"] << "\n";
-        std::cout << "Memory:        " << result["status_memory"] << "\n";
-        std::cout << "Language:      " << result["pretty_lang"] << "\n";
+
+        // Always show status
+        std::cout << "Status:        " << result.value("status_msg", "Unknown") << "\n";
+
+        if (result.contains("compile_error") && !result["compile_error"].get<std::string>().empty()) {
+            std::cout << "⛔ Compile Error:\n";
+            std::cout << result["compile_error"].get<std::string>() << "\n";
+            return;
+        }
+
+        if (!result.value("run_success", false)) {
+            std::cout << "⛔ Runtime Error or Submission Failed\n";
+            if (result.contains("std_output_list")) {
+                std::cout << "Output: " << result["std_output_list"] << "\n";
+            }
+            return;
+        }
+
+        if (result.contains("correct_answer") && !result["correct_answer"].is_null()) {
+            std::cout << "Correct:       " << (result["correct_answer"].get<bool>() ? "✅ Yes" : "❌ No") << "\n";
+        } else {
+            std::cout << "Correct:       Unknown\n";
+        }
+
+        if (result.contains("code_answer") && !result["code_answer"].empty()) {
+            std::cout << "Your Output:   " << result["code_answer"][0] << "\n";
+        }
+        if (result.contains("expected_code_answer") && !result["expected_code_answer"].empty()) {
+            std::cout << "Expected:      " << result["expected_code_answer"][0] << "\n";
+        }
+
+        std::cout << "Runtime:       " << result.value("status_runtime", "N/A") << "\n";
+        std::cout << "Memory:        " << result.value("status_memory", "N/A") << "\n";
+        std::cout << "Language:      " << result.value("pretty_lang", lang) << "\n";
     }
-    void run_tests(const std::string& slug) {
+    void run_tests(const std::string& slug, const std::string &lang_override) {
         // Detect file
         std::string folder_path;
         get_solution_folder(slug, folder_path);
         std::string solution_path;
-        get_solution_filepath(slug, solution_path);
+        if (!lang_override.empty()) {
+            get_solution_filepath(slug, solution_path, lang_override);
+        } else {
+            get_solution_filepath(slug, solution_path);
+        }
         std::string ext = get_file_extension(solution_path);
         std::string lang;
         if (ext == "cpp") {
