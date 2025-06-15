@@ -95,7 +95,16 @@ int main(int argc, char **argv) {
             std::cerr << "Usage: leetcli run <slug>\n";
             return 1;
         }
-        leetcli::run_tests(argv[2]);
+        std::string slug = argv[2];
+        std::string lang_override;
+
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--lang=", 0) == 0) {
+                lang_override = arg.substr(7);
+            }
+        }
+        leetcli::run_tests(slug, lang_override);
         return 0;
     } if (command == "config") {
         leetcli::handle_config_command(args);
@@ -106,7 +115,16 @@ int main(int argc, char **argv) {
             std::cerr << "Usage: leetcli runtime <slug>\n";
             return 1;
         }
-        leetcli::analyze_runtime(argv[2]);
+        std::string slug = argv[2];
+        std::string lang_override;
+
+        for (int i = 3; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--lang=", 0) == 0) {
+                lang_override = arg.substr(7);
+            }
+        }
+        leetcli::analyze_runtime(slug, lang_override);
         return 0;
     }
 

@@ -10,7 +10,7 @@ namespace leetcli {
 
     void set_gemini_key(const std::string& key) {
         nlohmann::json config;
-        std::string path = std::filesystem::path(get_home()) / ".leetcli/config.json";
+        std::filesystem::path path = std::filesystem::path(get_home()) / ".leetcli/config.json";
 
         // If config already exists, preserve other values
         if (std::ifstream in(path); in) {
@@ -90,6 +90,7 @@ namespace leetcli {
 
         std::cout << "✅ Saved testcases to " << (dir / "testcases.txt") << "\n";
     }
+
     std::string get_question_id(const std::string& slug, const std::string& session, const std::string& csrf) {
         nlohmann::json payload = {
             {"operationName", "getQuestionDetail"},
