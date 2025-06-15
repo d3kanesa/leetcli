@@ -212,8 +212,8 @@ namespace leetcli {
         // Write files
         write_markdown_file(dir + "/README.md", title, markdown);
         write_solution_file(solution_path, starter_code);
-        fetch_testcases(slug, dir);
-
+        // fetch_testcases(slug, dir);
+        parse_testcases(markdown, dir);
         return title + "\n\n" + markdown;
     }
 
@@ -438,6 +438,8 @@ namespace leetcli {
                 cpr::Header{
                     {"x-csrftoken", csrf},
                     {"Cookie", "LEETCODE_SESSION=" + session + "; csrftoken=" + csrf},
+                    {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"},
+                    {"Origin", "https://leetcode.com"},
                     {"Referer", "https://leetcode.com/problems/" + slug + "/"}
                 }
             );
