@@ -212,8 +212,7 @@ namespace leetcli {
         // Write files
         write_markdown_file(dir + "/README.md", title, markdown);
         write_solution_file(solution_path, starter_code);
-        // fetch_testcases(slug, dir);
-        parse_testcases(markdown, dir);
+        fetch_testcases(slug, dir);
         return title + "\n\n" + markdown;
     }
 

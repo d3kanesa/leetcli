@@ -91,35 +91,6 @@ namespace leetcli {
         std::cout << "✅ Saved testcases to " << (dir / "testcases.txt") << "\n";
     }
 
-    void parse_testcases(const std::string& markdown, const std::string& folder_path) {
-        std::regex input_re(R"(\*\*Input:\*\*\s*(.*?)\s*\*\*Output:\*\*\s*(.*?)(?:\n|$))");
-        std::sregex_iterator it(markdown.begin(), markdown.end(), input_re);
-        std::sregex_iterator end;
-
-        // Create file path and ensure directory exists
-        std::filesystem::path dir = folder_path;
-        std::filesystem::create_directories(dir);
-        std::ofstream outfile(dir / "testcases.txt");
-
-        if (!outfile) {
-            std::cerr << "Failed to open testcases.txt for writing.\n";
-            return;
-        }
-
-        while (it != end) {
-            std::string input = (*it)[1].str();
-            std::string output = (*it)[2].str();
-
-            outfile << "Input: " << input << "\n";
-            outfile << "Output: " << output << "\n";
-            outfile << "------\n";
-
-            ++it;
-        }
-
-        outfile.close();
-    }
-
     std::string get_question_id(const std::string& slug, const std::string& session, const std::string& csrf) {
         nlohmann::json payload = {
             {"operationName", "getQuestionDetail"},

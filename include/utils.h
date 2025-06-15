@@ -25,5 +25,4 @@ namespace leetcli {
     void fetch_testcases(const std::string& slug, const std::string& folder_path);
     std::vector<std::string> load_testcases(const std::string& filepath);
     int get_solution_filepath(const std::string& slug, std::string& solution_file,  const std::optional<std::string> &language = std::nullopt);
-    void parse_testcases(const std::string& markdown, const std::string& folder_path);
 }
