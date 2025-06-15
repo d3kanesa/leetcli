@@ -250,9 +250,21 @@ namespace leetcli {
     }
 
     void launch_in_editor(const std::string &path) {
-        std::string cmd = "vim";
-        cmd += " \"" + path + "\"";
-        std::system(cmd.c_str());
+        #ifdef _WIN32
+                const char* editor = std::getenv("EDITOR");
+                if (editor) {
+                    std::string command = std::string(editor) + " \"" + path + "\"";
+                    std::system(command.c_str());
+                } else {
+                    std::string command = "start \"\" \"" + path + "\""; // Default program
+                    std::system(command.c_str());
+                }
+        #else
+                const char* editor = std::getenv("EDITOR");
+                if (!editor) editor = "vi"; // or nano or sensible-editor
+                std::string command = std::string(editor) + " \"" + path + "\"";
+                std::system(command.c_str());
+        #endif
     }
 
     void set_session_cookie() {
