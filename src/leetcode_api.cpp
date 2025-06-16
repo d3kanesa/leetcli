@@ -572,7 +572,7 @@ namespace leetcli {
             }
 
             actual_slug = json["data"]["activeDailyCodingChallengeQuestion"]["question"]["titleSlug"];
-            std::cout << "Fetching hints for today's daily problem: " << actual_slug << "\n";
+            std::cout << "Fetching topics for today's daily problem: " << actual_slug << "\n";
         }
         nlohmann::json query = {
             {
