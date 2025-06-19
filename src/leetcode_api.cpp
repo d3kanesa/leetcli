@@ -9,10 +9,69 @@
 #include <thread>
 
 namespace leetcli {
-    std::string html_to_text(const std::string &html); // assuming this is declared elsewhere
-    void write_markdown_file(const std::string &path, const std::string &title, const std::string &markdown);
 
-    void write_solution_file(const std::string &path, const std::string &code);
+    void give_hint(const std::string& slug, const std::string &lang_override) {
+        std::string solution_path;
+        std::string folder_path;
+        if (!lang_override.empty()) {
+            get_solution_filepath(slug, solution_path, lang_override);
+        } else {
+            get_solution_filepath(slug, solution_path);
+        }
+        get_solution_folder(slug, folder_path);
+        std::string readme_path = folder_path + "/README.md";
+
+        std::ifstream readme_file(readme_path), solution_file(solution_path);
+        if (!readme_file || !solution_file) {
+            std::cerr << "❌ Missing README or solution file for " << slug << "\n";
+            return;
+        }
+
+        std::string description((std::istreambuf_iterator<char>(readme_file)), std::istreambuf_iterator<char>());
+        std::string code((std::istreambuf_iterator<char>(solution_file)), std::istreambuf_iterator<char>());
+        std::string api_key = get_gemini_key(); // or your Gemini key
+
+        if (api_key.empty()) {
+            std::cerr << "❌ No API key found. Use `leetcli config set-openai-key <your-key>`.\n";
+            return;
+        }
+
+        std::string prompt =
+            "You are a helpful coding assistant. Based on the following LeetCode problem description and the user's current partial solution, provide a helpful **hint** that nudges them toward the next step without giving away the full solution.\n\n"
+            "**Problem Description:**\n" + description + "\n\n"
+            "**Current Code:**\n" + code + "\n\n"
+            "**Hint (as helpful and short as possible):**";
+
+        std::string url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + api_key;
+
+        nlohmann::json payload = {
+            {"contents", {{
+                {"parts", {{
+                    {"text", prompt}
+                }}}
+            }}}
+        };
+
+        cpr::Response r = cpr::Post(
+            cpr::Url{url},
+            cpr::Header{{"Content-Type", "application/json"}},
+            cpr::Body{payload.dump()}
+        );
+
+        if (r.status_code != 200) {
+            std::cerr << "❌ Gemini API call failed: " << r.status_code << "\n" << r.text << "\n";
+            std::cout << "Error: Gemini API call failed.";
+        }
+
+        try {
+            auto response_json = nlohmann::json::parse(r.text);
+            auto text = response_json["candidates"][0]["content"]["parts"][0]["text"].get<std::string>();
+            std::cout <<"\n💡 Hint:\n"<< text;
+        } catch (const std::exception& e) {
+            std::cerr << "❌ Failed to parse Gemini response: " << e.what() << "\n";
+            std::cout << "Error: Failed to parse Gemini response.";
+        }
+    }
 
     void analyze_runtime(const std::string& slug, const std::string &lang_override) {
         std::string path;
@@ -97,17 +156,6 @@ namespace leetcli {
                 std::cerr << "Raw text:\n" << r.text << "\n";
             }
     }
-
-
-
-    void handle_config_command(const std::vector<std::string> &args) {
-        if (args.size() == 3 && args[1] == "set-gemini-key") {
-                set_gemini_key(args[2]);
-        } else {
-            std::cerr << "Usage: leetcli config set-gemini-key <your-api-key>\n";
-        }
-    }
-
 
     std::string get_daily_question_slug() {
         const std::string& session = get_session_cookie();
