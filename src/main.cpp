@@ -66,6 +66,26 @@ int main(int argc, char **argv) {
         leetcli::solve_problem(slug, lang_override);
         return 0;
     }
+    if (command == "hints") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli hints <slug>\n";
+            return 1;
+        }
+
+        std::string slug = argv[2];
+        leetcli::fetch_problem_hints(slug);
+        return 0;
+    }
+    if (command == "topics") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli topics <slug>\n";
+            return 1;
+        }
+
+        std::string slug = argv[2];
+        leetcli::fetch_problem_topics(slug);
+        return 0;
+    }
     if (command == "list") {
         leetcli::list_fetched_problems();
         return 0;
