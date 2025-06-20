@@ -2,8 +2,6 @@ name: Build & Release leetcli (macOS)
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'  # Triggers on version tags like v1.0.0
 
@@ -16,16 +14,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up vcpkg
-      uses: lukka/run-vcpkg@v10
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
-        runVcpkgInstall: true
-        vcpkgJsonGlob: '**/vcpkg.json'
+    - name: Clone vcpkg
+      run: git clone https://github.com/microsoft/vcpkg.git
+
+    - name: Bootstrap vcpkg
+      run: ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Install Dependencies
-      run: |
-        ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx-static
+      run: ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx-static
 
     - name: Configure CMake
       run: |
