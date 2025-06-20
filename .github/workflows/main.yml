@@ -1,0 +1,49 @@
+name: Build & Release leetcli (macOS)
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'  # Triggers on version tags like v1.0.0
+
+jobs:
+  build:
+    name: Build on macOS
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up vcpkg
+      uses: lukka/run-vcpkg@v10
+      with:
+        vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        runVcpkgInstall: true
+        vcpkgJsonGlob: '**/vcpkg.json'
+
+    - name: Install Dependencies
+      run: |
+        ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx-static
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build \
+              -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+              -DVCPKG_TARGET_TRIPLET=x64-osx-static
+
+    - name: Build
+      run: cmake --build . --target install
+
+    - name: Strip and Rename
+      run: |
+        cp build/leetcli ./leetcli-macos
+        strip leetcli-macos
+
+    - name: Upload Release Asset
+      uses: softprops/action-gh-release@v2
+      with:
+        files: leetcli-macos
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
