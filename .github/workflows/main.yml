@@ -32,7 +32,7 @@ jobs:
               -DVCPKG_TARGET_TRIPLET=x64-osx
 
     - name: Build
-      run: cmake --build . --target install
+      run: cmake --build build --target install
 
     - name: Strip and Rename
       run: |
