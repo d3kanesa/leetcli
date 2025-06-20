@@ -77,7 +77,7 @@ leetcli hint slug [--lang=...]      Ask Gemini for a helpful hint based on your 
 leetcli hints slug                  Gets the hints for the given problem in leetcode
 leetcli topics slug                 Gets the topics for the given problem in leetcode
 leetcli config set-gemini-key key   Set your Gemini API key
-leetcli help                        Show this help message.
+leetcli help                        Show this help message
 ```
 
 ## 🧠 Example: Runtime Analysis
