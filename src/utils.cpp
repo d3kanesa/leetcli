@@ -447,7 +447,6 @@ namespace leetcli {
         }
 
         solution_file = candidate.string();
-        std::cout << solution_file << "\n";
         return 0;
     }
     // Loads testcases from testcases.txt and returns them as a vector of strings
@@ -478,6 +477,13 @@ namespace leetcli {
         }
 
         return testcases;
+    }
+    void handle_config_command(const std::vector<std::string> &args) {
+        if (args.size() == 3 && args[1] == "set-gemini-key") {
+            set_gemini_key(args[2]);
+        } else {
+            std::cerr << "Usage: leetcli config set-gemini-key <your-api-key>\n";
+        }
     }
 
 } // namespace leetcli

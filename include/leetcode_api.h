@@ -14,6 +14,7 @@ namespace leetcli {
     void submit_solution(const std::string& slug, const std::string &lang_override);
     void handle_config_command(const std::vector<std::string>& args);
     void analyze_runtime(const std::string& slug, const std::string &lang_override);
+    void give_hint(const std::string& slug, const std::string &lang_override);
     void fetch_problem_topics(const std::string &slug);
     void fetch_problem_hints(const std::string &slug);
 }
