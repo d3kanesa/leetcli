@@ -40,6 +40,22 @@
    ```sh
    cmake --install build --prefix ~/.local
    ```
+## ⚖️ Initialization
+Run `init` once at the root of your development folder:
+```sh
+leetcli init
+```
+This command sets up your `leetcli` workspace:
+- Creates a `problems/` folder in the current directory to store fetched problems.
+- Asks you to choose your preferred programming language (`cpp`, `python`, `java`), which is used as the default when fetching problems.
+- Saves configuration in a `.leetcli_config.json` file.
+
+Additionally, you'll want to authorize your LeetCode session to enable features like problem submission and test running:
+- Run the login command:
+  ```sh
+  leetcli login
+  ```
+- You'll be prompted to enter your LeetCode session token and CSRF token, which are stored securely for future use.
 
 ## 🛠️ Configuration
 To set your Gemini API key:
@@ -58,27 +74,11 @@ leetcli run slug [--lang=...]       Run your solution against LeetCode testcases
 leetcli submit slug [--lang=...]    Submit your solution to LeetCode
 leetcli runtime slug [--lang=...]   Analyze time/space complexity using Gemini
 leetcli hint slug [--lang=...]      Ask Gemini for a helpful hint based on your solution progress
+leetcli hints slug                  Gets the hints for the given problem in leetcode
+leetcli topics slug                 Gets the topics for the given problem in leetcode
 leetcli config set-gemini-key key   Set your Gemini API key
 leetcli help                        Show this help message
 ```
-
-
-## ⚖️ Initialization
-Run `init` once at the root of your development folder:
-```sh
-leetcli init
-```
-This command sets up your `leetcli` workspace:
-- Creates a `problems/` folder in the current directory to store fetched problems.
-- Asks you to choose your preferred programming language (`cpp`, `python`, `java`), which is used as the default when fetching problems.
-- Saves configuration in a `.leetcli_config.json` file.
-
-Additionally, you'll want to authorize your LeetCode session to enable features like problem submission and test running:
-- Run the login command:
-  ```sh
-  leetcli login
-  ```
-- You'll be prompted to enter your LeetCode session token and CSRF token, which are stored securely for future use.
 
 ## 🧠 Example: Runtime Analysis
 ```sh

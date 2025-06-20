@@ -587,41 +587,6 @@ namespace leetcli {
         }
     }
     void fetch_problem_topics(const std::string &slug) {
-        std::string actual_slug = slug;
-
-        if (slug == "daily") {
-            nlohmann::json query = {
-                {"query", R"(
-                query questionOfToday {
-                    activeDailyCodingChallengeQuestion {
-                        question {
-                            titleSlug
-                        }
-                    }
-                }
-            )"}
-            };
-
-            cpr::Response r = cpr::Post(
-                cpr::Url{"https://leetcode.com/graphql"},
-                cpr::Header{{"Content-Type", "application/json"}},
-                cpr::Body{query.dump()}
-            );
-
-            if (r.status_code != 200) {
-                std::cerr << "Failed to fetch daily problem slug: HTTP " << r.status_code << "\n";
-                return;
-            }
-
-            auto json = nlohmann::json::parse(r.text);
-            if (!json.contains("data")) {
-                std::cerr << "Invalid daily challenge response.\n";
-                return;
-            }
-
-            actual_slug = json["data"]["activeDailyCodingChallengeQuestion"]["question"]["titleSlug"];
-            std::cout << "Fetching topics for today's daily problem: " << actual_slug << "\n";
-        }
         nlohmann::json query = {
             {
                 "query", R"(
@@ -634,7 +599,7 @@ namespace leetcli {
                 }
             )"
             },
-            {"variables", {{"titleSlug", actual_slug}}}
+            {"variables", {{"titleSlug", slug}}}
         };
 
         cpr::Response r = cpr::Post(
@@ -662,41 +627,7 @@ namespace leetcli {
         }
     }
     void fetch_problem_hints(const std::string &slug) {
-        std::string actual_slug = slug;
 
-        if (slug == "daily") {
-            nlohmann::json query = {
-                {"query", R"(
-                query questionOfToday {
-                    activeDailyCodingChallengeQuestion {
-                        question {
-                            titleSlug
-                        }
-                    }
-                }
-            )"}
-            };
-
-            cpr::Response r = cpr::Post(
-                cpr::Url{"https://leetcode.com/graphql"},
-                cpr::Header{{"Content-Type", "application/json"}},
-                cpr::Body{query.dump()}
-            );
-
-            if (r.status_code != 200) {
-                std::cerr << "Failed to fetch daily problem slug: HTTP " << r.status_code << "\n";
-                return;
-            }
-
-            auto json = nlohmann::json::parse(r.text);
-            if (!json.contains("data")) {
-                std::cerr << "Invalid daily challenge response.\n";
-                return;
-            }
-
-            actual_slug = json["data"]["activeDailyCodingChallengeQuestion"]["question"]["titleSlug"];
-            std::cout << "Fetching hints for today's daily problem: " << actual_slug << "\n";
-        }
         nlohmann::json query = {
             {
                 "query", R"(
@@ -707,7 +638,7 @@ namespace leetcli {
                 }
             )"
             },
-            {"variables", {{"titleSlug", actual_slug}}}
+            {"variables", {{"titleSlug", slug}}}
         };
 
         cpr::Response r = cpr::Post(

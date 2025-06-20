@@ -73,6 +73,9 @@ int main(int argc, char **argv) {
         }
 
         std::string slug = argv[2];
+        if (slug == "daily") {
+            slug = leetcli::get_daily_question_slug();
+        }
         leetcli::fetch_problem_hints(slug);
         return 0;
     }
@@ -83,6 +86,9 @@ int main(int argc, char **argv) {
         }
 
         std::string slug = argv[2];
+        if (slug == "daily") {
+            slug = leetcli::get_daily_question_slug();
+        }
         leetcli::fetch_problem_topics(slug);
         return 0;
     }
@@ -191,6 +197,9 @@ int main(int argc, char **argv) {
                   << "  leetcli submit <slug> [--lang=...]  Submit your solution to LeetCode\n"
                   << "  leetcli runtime <slug> [--lang=...] Analyze time/space complexity using Gemini\n"
                   << "  leetcli hint <slug> [--lang=...]    Ask Gemini for a helpful hint based on your solution progress\n"
+                  << "  leetcli hints <slug>                Gets the hints for the given problem in leetcode\n"
+                  << "  leetcli topics <slug>               Gets the topics for the given problem in leetcode\n"
+                  << "  leetcli config set-gemini-key <key> Set your Gemini API key\n"
                   << "  leetcli config set-gemini-key <key> Set your Gemini API key\n"
                   << "  leetcli help                        Show this help message\n";
         return 0;
