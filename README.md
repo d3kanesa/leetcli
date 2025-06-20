@@ -27,7 +27,7 @@
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/yourusername/leetcli.git
+   git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
 2. Install dependencies with vcpkg (or ensure they are installed):
@@ -50,7 +50,7 @@
 
 1. **Clone the repository**:
    ```
-   git clone https://github.com/yourusername/leetcli.git
+   git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
 
