@@ -23,13 +23,13 @@ jobs:
       run: ./vcpkg/bootstrap-vcpkg.sh
 
     - name: Install Dependencies
-      run: ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx
+      run: ./vcpkg/vcpkg install cpr nlohmann-json --triplet arm64-osx
 
     - name: Configure CMake
       run: |
         cmake -S . -B build \
               -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-              -DVCPKG_TARGET_TRIPLET=x64-osx
+              -DVCPKG_TARGET_TRIPLET=arm64-osx
 
     - name: Build
       run: cmake --build build --target install
