@@ -22,6 +22,9 @@
 - 📂 **Organized project structure** with per-problem folders
 - 🔑 **Session management** for authenticated actions
 ## 🔧 Installation
+
+### 🐧 Linux/macOS
+
 1. Clone the repository:
    ```sh
    git clone https://github.com/yourusername/leetcli.git
@@ -40,6 +43,45 @@
    ```sh
    cmake --install build --prefix ~/.local
    ```
+
+---
+
+### 🪟 Windows
+
+1. **Clone the repository**:
+   ```
+   git clone https://github.com/yourusername/leetcli.git
+   cd leetcli
+   ```
+
+2. **Install dependencies with vcpkg**:
+   ```
+   .\vcpkg install cpr nlohmann-json
+   ```
+
+3. **Build and install**:
+   ```
+   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake
+   cmake --build build --target install
+   ```
+
+4. **Add `leetcli.exe` to your PATH**:
+   - Locate the folder where `leetcli.exe` was built
+   - Press `Win + S` and search for **"Environment Variables"**.
+   - Click **"Edit the system environment variables"**.
+   - In the **System Properties** window, click **"Environment Variables…"**.
+   - Under **User variables**, find and select `Path`, then click **Edit**.
+   - Click **New** and paste in the full path to your `leetcli.exe` folder.
+   - Click **OK** on all windows to apply changes.
+
+5. **Test the installation**:
+   Open a new terminal (e.g., `cmd`, `PowerShell`, or Windows Terminal) and run:
+   ```
+   leetcli init
+   ```
+
+If you see the prompt asking for a preferred language, it worked!
+
 ## ⚖️ Initialization
 Run `init` once at the root of your development folder:
 ```sh
