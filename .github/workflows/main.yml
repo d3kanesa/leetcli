@@ -60,4 +60,4 @@ jobs:
         with:
           files: ${{ matrix.os == 'windows-latest' && 'leetcli-windows.zip' || matrix.os == 'ubuntu-latest' && 'leetcli-linux.zip' || 'leetcli-macos.zip' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

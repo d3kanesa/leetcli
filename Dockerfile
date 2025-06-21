@@ -26,4 +26,4 @@ RUN cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=/opt/vcpkg/scripts/buildsystems/v
 # RUN cmake --install build --prefix ~/.local
 
 # ...existing code...
-ENTRYPOINT ["/usr/local/bin/leetcli"]
+ENTRYPOINT ["/bin/bash", "-c", "exec /usr/local/bin/leetcli \"$@\"", "--"]
