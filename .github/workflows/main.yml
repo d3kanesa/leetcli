@@ -48,13 +48,21 @@ jobs:
           copy install_dir\bin\leetcli.exe dist\leetcli.exe
           Compress-Archive -Path dist\leetcli.exe -DestinationPath leetcli-windows.zip
 
-      - name: Package executable (macOS/Linux)
-        if: runner.os != 'Windows'
+      - name: Package executable (macOS)
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           mkdir -p dist
-          cp install_dir/bin/leetcli dist/leetcli-${{ runner.os | downcase }}
-          zip -j leetcli-${{ runner.os | downcase }}.zip dist/leetcli-${{ runner.os | downcase }}
+          cp install_dir/bin/leetcli dist/leetcli-macos
+          zip -j leetcli-macos.zip dist/leetcli-macos
+
+      - name: Package executable (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp install_dir/bin/leetcli dist/leetcli-ubuntu
+          zip -j leetcli-ubuntu.zip dist/leetcli-ubuntu
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
