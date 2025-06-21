@@ -68,4 +68,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'macOS' && 'leetcli-macos.zip' || 'leetcli-ubuntu.zip' }} --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions" --force
+          gh release create ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'macOS' && 'leetcli-macos.zip' || 'leetcli-ubuntu.zip' }} --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions"
