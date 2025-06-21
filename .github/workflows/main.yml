@@ -14,10 +14,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: 📥 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: 🧰 Install vcpkg and dependencies
+      - name: Install vcpkg and dependencies
         shell: bash
         run: |
           git clone https://github.com/microsoft/vcpkg.git
@@ -29,24 +29,24 @@ jobs:
             ./vcpkg/vcpkg install cpr nlohmann-json
           fi
 
-      - name: ⚙️ Configure CMake
+      - name: Configure CMake
         run: |
           mkdir build
           cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 
-      - name: 🛠️ Build leetcli
+      - name: Build leetcli
         run: cmake --build build --config Release --target install
 
-      - name: 📦 Install leetcli
+      - name: Install leetcli
         run: cmake --install build --prefix install_dir
 
-      - name: 🧹 Package executable
+      - name: Package executable
         shell: bash
         run: |
           mkdir -p dist
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             cp install_dir/bin/leetcli.exe dist/leetcli.exe
-            powershell Compress-Archive -Path dist/leetcli.exe -DestinationPath leetcli-windows.zip
+            zip -j leetcli-windows.zip dist/leetcli.exe
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
             cp install_dir/bin/leetcli dist/leetcli-macos
             zip -j leetcli-macos.zip dist/leetcli-macos
@@ -55,12 +55,9 @@ jobs:
             zip -j leetcli-linux.zip dist/leetcli-linux
           fi
 
-      - name: 🚀 Upload Release Asset
+      - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            leetcli-windows.zip
-            leetcli-linux.zip
-            leetcli-macos.zip
+          files: ${{ matrix.os == 'windows-latest' && 'leetcli-windows.zip' || matrix.os == 'ubuntu-latest' && 'leetcli-linux.zip' || 'leetcli-macos.zip' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
