@@ -40,24 +40,25 @@ jobs:
       - name: Install leetcli
         run: cmake --install build --prefix install_dir
 
-      - name: Package executable
+      - name: Package executable (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          mkdir dist
+          copy install_dir\bin\leetcli.exe dist\leetcli.exe
+          Compress-Archive -Path dist\leetcli.exe -DestinationPath leetcli-windows.zip
+
+      - name: Package executable (macOS/Linux)
+        if: runner.os != 'Windows'
         shell: bash
         run: |
           mkdir -p dist
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            cp install_dir/bin/leetcli.exe dist/leetcli.exe
-            zip -j leetcli-windows.zip dist/leetcli.exe
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            cp install_dir/bin/leetcli dist/leetcli-macos
-            zip -j leetcli-macos.zip dist/leetcli-macos
-          else
-            cp install_dir/bin/leetcli dist/leetcli-linux
-            zip -j leetcli-linux.zip dist/leetcli-linux
-          fi
+          cp install_dir/bin/leetcli dist/leetcli-${{ runner.os | downcase }}
+          zip -j leetcli-${{ runner.os | downcase }}.zip dist/leetcli-${{ runner.os | downcase }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.os == 'windows-latest' && 'leetcli-windows.zip' || matrix.os == 'ubuntu-latest' && 'leetcli-linux.zip' || 'leetcli-macos.zip' }}
+          files: ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'macOS' && 'leetcli-macos.zip' || 'leetcli-ubuntu.zip' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
