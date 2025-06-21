@@ -3,7 +3,7 @@ name: Build and Release leetcli (Cross-platform)
 on:
   push:
     tags:
-      - 'v*'  # Example: v1.0.0
+      - 'v*'
 
 jobs:
   build:
@@ -18,16 +18,21 @@ jobs:
         uses: actions/checkout@v3
 
       - name: 🧰 Install vcpkg and dependencies
+        shell: bash
         run: |
           git clone https://github.com/microsoft/vcpkg.git
-          ./vcpkg/bootstrap-vcpkg.sh || .\vcpkg\bootstrap-vcpkg.bat
-          ./vcpkg/vcpkg install cpr nlohmann-json || .\vcpkg\vcpkg install cpr nlohmann-json
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            ./vcpkg/bootstrap-vcpkg.bat
+            ./vcpkg/vcpkg.exe install cpr nlohmann-json
+          else
+            ./vcpkg/bootstrap-vcpkg.sh
+            ./vcpkg/vcpkg install cpr nlohmann-json
+          fi
 
       - name: ⚙️ Configure CMake
         run: |
           mkdir build
-          cd build
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=./vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 
       - name: 🛠️ Build leetcli
         run: cmake --build build --config Release --target install
@@ -36,19 +41,19 @@ jobs:
         run: cmake --install build --prefix install_dir
 
       - name: 🧹 Package executable
+        shell: bash
         run: |
-          mkdir dist
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            copy install_dir\\bin\\leetcli.exe dist\\leetcli.exe
-            powershell Compress-Archive -Path dist\\leetcli.exe -DestinationPath leetcli-windows.zip
-          elif [ "$RUNNER_OS" == "macOS" ]; then
+          mkdir -p dist
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp install_dir/bin/leetcli.exe dist/leetcli.exe
+            powershell Compress-Archive -Path dist/leetcli.exe -DestinationPath leetcli-windows.zip
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
             cp install_dir/bin/leetcli dist/leetcli-macos
             zip -j leetcli-macos.zip dist/leetcli-macos
           else
             cp install_dir/bin/leetcli dist/leetcli-linux
             zip -j leetcli-linux.zip dist/leetcli-linux
           fi
-        shell: bash
 
       - name: 🚀 Upload Release Asset
         uses: softprops/action-gh-release@v2
