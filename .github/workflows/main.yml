@@ -1,45 +1,61 @@
-name: Build & Release leetcli (macOS)
+name: Build and Release leetcli (Cross-platform)
 
 on:
   push:
     tags:
-      - 'v*'  # Triggers on version tags like v1.0.0
+      - 'v*'  # Example: v1.0.0
 
 jobs:
   build:
-    name: Build on macOS
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
 
-    - name: Clone vcpkg
-      run: git clone https://github.com/microsoft/vcpkg.git
+      - name: 🧰 Install vcpkg and dependencies
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.sh || .\vcpkg\bootstrap-vcpkg.bat
+          ./vcpkg/vcpkg install cpr nlohmann-json || .\vcpkg\vcpkg install cpr nlohmann-json
 
-    - name: Bootstrap vcpkg
-      run: ./vcpkg/bootstrap-vcpkg.sh
+      - name: ⚙️ Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
 
-    - name: Install Dependencies
-      run: ./vcpkg/vcpkg install cpr nlohmann-json --triplet arm64-osx
+      - name: 🛠️ Build leetcli
+        run: cmake --build build --config Release --target install
 
-    - name: Configure CMake
-      run: |
-        cmake -S . -B build \
-              -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
-              -DVCPKG_TARGET_TRIPLET=arm64-osx
+      - name: 📦 Install leetcli
+        run: cmake --install build --prefix install_dir
 
-    - name: Build
-      run: cmake --build build --target install
+      - name: 🧹 Package executable
+        run: |
+          mkdir dist
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            copy install_dir\\bin\\leetcli.exe dist\\leetcli.exe
+            powershell Compress-Archive -Path dist\\leetcli.exe -DestinationPath leetcli-windows.zip
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            cp install_dir/bin/leetcli dist/leetcli-macos
+            zip -j leetcli-macos.zip dist/leetcli-macos
+          else
+            cp install_dir/bin/leetcli dist/leetcli-linux
+            zip -j leetcli-linux.zip dist/leetcli-linux
+          fi
+        shell: bash
 
-    - name: Strip and Rename
-      run: |
-        cp build/leetcli ./leetcli-macos
-        strip leetcli-macos
-
-    - name: Upload Release Asset
-      uses: softprops/action-gh-release@v2
-      with:
-        files: leetcli-macos
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: 🚀 Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            leetcli-windows.zip
+            leetcli-linux.zip
+            leetcli-macos.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
