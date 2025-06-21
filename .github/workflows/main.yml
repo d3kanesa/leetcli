@@ -69,4 +69,4 @@ jobs:
         with:
           files: ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'macOS' && 'leetcli-macos.zip' || 'leetcli-ubuntu.zip' }}
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
