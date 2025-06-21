@@ -181,7 +181,10 @@ namespace leetcli {
         std::string lang;
         std::cout << "Enter your preferred language (e.g., cpp, python, java): ";
         std::getline(std::cin, lang);
-
+        if (lang != "python" and lang != "cpp" and lang != "java") {
+            std::cout << "Language is not supported";
+            return;
+        }
         nlohmann::json config = {
             {"problems_dir", default_path},
             {"lang", lang}
