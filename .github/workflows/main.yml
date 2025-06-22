@@ -10,7 +10,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -40,7 +39,7 @@ jobs:
       - name: Install leetcli
         run: cmake --install build --prefix install_dir
 
-      - name: Package executable (Windows)
+      - name: Package leetcli (Windows)
         if: runner.os == 'Windows'
         shell: powershell
         run: |
@@ -48,7 +47,7 @@ jobs:
           copy install_dir\bin\leetcli.exe dist\leetcli.exe
           Compress-Archive -Path dist\leetcli.exe -DestinationPath leetcli-windows.zip
 
-      - name: Package executable (macOS)
+      - name: Package leetcli (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
@@ -56,7 +55,7 @@ jobs:
           cp install_dir/bin/leetcli dist/leetcli-macos
           zip -j leetcli-macos.zip dist/leetcli-macos
 
-      - name: Package executable (Linux)
+      - name: Package leetcli (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
@@ -64,8 +63,18 @@ jobs:
           cp install_dir/bin/leetcli dist/leetcli-ubuntu
           zip -j leetcli-ubuntu.zip dist/leetcli-ubuntu
 
-      - name: Create GitHub Release with gh
+      # Only macOS creates the release
+      - name: Create GitHub Release (macOS only)
+        if: runner.os == 'macOS'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'macOS' && 'leetcli-macos.zip' || 'leetcli-ubuntu.zip' }} --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions"
+          gh release create ${{ github.ref_name }} leetcli-macos.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions"
+
+      # Others upload to the same release
+      - name: Upload to GitHub Release
+        if: runner.os != 'macOS'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          gh release upload ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || 'leetcli-ubuntu.zip' }} --clobber
