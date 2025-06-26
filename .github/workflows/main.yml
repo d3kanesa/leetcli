@@ -106,22 +106,22 @@ jobs:
 ## Installation
 
 ### Windows
-1. Download `leetcli-windows.zip`
+1. Download \`leetcli-windows.zip\`
 2. Extract the ZIP file
-3. Run `install.bat` as Administrator
-4. Add the `install\bin` directory to your PATH
+3. Run \`install.bat\` as Administrator
+4. Add the \`install\\bin\` directory to your PATH
 
 ### macOS/Linux
-1. Download `leetcli-macos.zip` or `leetcli-linux.zip`
+1. Download \`leetcli-macos.zip\` or \`leetcli-linux.zip\`
 2. Extract the ZIP file
-3. Run: `chmod +x install.sh && ./install.sh`
-4. Or manually copy `leetcli` to `/usr/local/bin`
+3. Run: \`chmod +x install.sh && ./install.sh\`
+4. Or manually copy \`leetcli\` to \`/usr/local/bin\`
 
 ## Usage
-```bash
+\`\`\`bash
 leetcli init
 leetcli fetch daily
-```"
+\`\`\`"
 
       # Others upload to the same release
       - name: Upload to GitHub Release
