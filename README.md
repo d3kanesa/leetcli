@@ -21,138 +21,106 @@
 - 📤 **Submit solutions** directly from the CLI
 - 📂 **Organized project structure** with per-problem folders
 - 🔑 **Session management** for authenticated actions
+
 ## 🔧 Installation
 
-### ⚡ Quick Install (Recommended)
+### 📦 Quick Install (Recommended)
 
-**For macOS and Linux users:**
-```bash
-curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetcli.sh | bash
-```
+Download the latest release for your platform from: https://github.com/d3kanesa/leetcli/releases
 
-**For Windows users:**
-1. Download the latest release from: https://github.com/d3kanesa/leetcli/releases
+#### 🪟 Windows
+1. Download `leetcli-windows.zip`
 2. Extract the ZIP file
-3. Run `install.bat` as Administrator
+3. **Run `install.bat` as Administrator**
+4. Add the `install\bin` directory to your PATH
+
+#### 🐧 Linux/macOS
+1. Download `leetcli-linux.zip` or `leetcli-macos.zip`
+2. Extract the ZIP file
+3. Run: `chmod +x install.sh && ./install.sh`
+4. Or manually copy `leetcli` to `/usr/local/bin`
 
 ---
 
-### 🐧 Linux/macOS
+### 🔨 Build from Source
 
-1. **Install prerequisites**:
-   ```sh
-   # Install Homebrew if you don't have it
-   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-   
-   # Install CMake
-   brew install cmake
-   ```
+#### Prerequisites
+- **CMake** (3.14 or higher)
+- **Git**
+- **C++17 compatible compiler**
+  - Windows: Visual Studio 2019/2022 or Build Tools
+  - Linux: GCC 7+ or Clang 5+
+  - macOS: Xcode Command Line Tools
 
-2. **Set up vcpkg from GitHub**:
-   ```sh
-   # Clone vcpkg to a permanent location
-   git clone https://github.com/Microsoft/vcpkg.git ~/vcpkg
-   
-   # Set the VCPKG_ROOT environment variable
-   echo 'export VCPKG_ROOT="$HOME/vcpkg"' >> ~/.zshrc
-   source ~/.zshrc
-   
-   # Bootstrap vcpkg
-   cd ~/vcpkg
-   ./bootstrap-vcpkg.sh
-   ```
+#### 🐧 Linux/macOS
 
-3. **Clone the repository**:
+1. **Clone the repository**:
    ```sh
    git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
 
-4. **Install dependencies**:
+2. **Run the installation script**:
    ```sh
-   vcpkg install cpr nlohmann-json
+   chmod +x install.sh
+   ./install.sh
    ```
 
-5. **Build and install**:
+   Or build without installing:
    ```sh
-   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
-   cmake --build build --target install
+   chmod +x build.sh
+   ./build.sh
    ```
-   
-   **Alternative installation to user directory**:
+
+   Or build manually:
    ```sh
-   cmake --install build --prefix ~/.local
-   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-   source ~/.zshrc
-   ```
-
-6. **Test the installation**:
-   ```sh
-   leetcli --help
-   ```
-
----
-
-### 🪟 Windows
-
-1. **Install prerequisites**:
-   ```cmd
-   # Install Chocolatey if you don't have it (run in PowerShell as Administrator)
-   Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+   # Install vcpkg and dependencies
+   git clone https://github.com/microsoft/vcpkg.git
+   ./vcpkg/bootstrap-vcpkg.sh
+   ./vcpkg/vcpkg install cpr nlohmann-json
    
-   # Install Git, CMake, and Visual Studio Build Tools
-   choco install git cmake visualstudio2022buildtools
+   # Build and install
+   mkdir build && cd build
+   cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake
+   cmake --build . --config Release
+   sudo cmake --install . --prefix /usr/local
    ```
 
-2. **Set up vcpkg from GitHub**:
-   ```cmd
-   # Clone vcpkg to a permanent location (e.g., C:\vcpkg)
-   git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
-   
-   # Set the VCPKG_ROOT environment variable
-   setx VCPKG_ROOT "C:\vcpkg"
-   
-   # Bootstrap vcpkg
-   cd C:\vcpkg
-   .\bootstrap-vcpkg.bat
-   ```
+#### 🪟 Windows
 
-3. **Clone the repository**:
+1. **Clone the repository**:
    ```cmd
    git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
 
-4. **Install dependencies**:
+2. **Run the installation script**:
    ```cmd
-   vcpkg install cpr nlohmann-json
+   install.bat
    ```
 
-5. **Build and install**:
+   Or build without installing:
    ```cmd
-   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake
-   cmake --build build --target install
+   build.bat
    ```
+
+   Or build manually:
+   ```cmd
+   REM Install vcpkg and dependencies
+   git clone https://github.com/microsoft/vcpkg.git
+   vcpkg\bootstrap-vcpkg.bat
+   vcpkg\vcpkg.exe install cpr nlohmann-json
    
-   **Alternative installation to user directory**:
-   ```cmd
-   cmake --install build --prefix %USERPROFILE%\.local
-   setx PATH "%PATH%;%USERPROFILE%\.local\bin"
+   REM Build and install
+   mkdir build
+   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=vcpkg\scripts\buildsystems\vcpkg.cmake
+   cmake --build build --config Release
+   cmake --install build --prefix install
    ```
 
-6. **Add to PATH (if not using alternative installation)**:
-   - Press `Win + S` and search for **"Environment Variables"**
-   - Click **"Edit the system environment variables"**
-   - In the **System Properties** window, click **"Environment Variables…"**
-   - Under **User variables**, find and select `Path`, then click **Edit**
-   - Click **New** and add `C:\Program Files\leetcli\bin` (or wherever leetcli.exe was installed)
-   - Click **OK** on all windows to apply changes
-
-7. **Test the installation**:
-   Open a new terminal (e.g., `cmd`, `PowerShell`, or Windows Terminal) and run:
-   ```cmd
-   leetcli help
-   ```
+3. **Add to PATH** (if using manual build):
+   - Locate the `install\bin` folder
+   - Add it to your system PATH environment variable
 
 ## ⚖️ Initialization
 Run `init` once at the root of your development folder:
