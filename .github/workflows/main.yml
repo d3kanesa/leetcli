@@ -103,25 +103,11 @@ jobs:
         run: |
           gh release create ${{ github.ref_name }} leetcli-macos.zip leetcli-linux.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions
 
-## Installation
+Installation:
+- Windows: Download leetcli-windows.zip, extract, run install.bat as Administrator
+- macOS/Linux: Download leetcli-macos.zip or leetcli-linux.zip, extract, run chmod +x install.sh && ./install.sh
 
-### Windows
-1. Download \`leetcli-windows.zip\`
-2. Extract the ZIP file
-3. Run \`install.bat\` as Administrator
-4. Add the \`install\\bin\` directory to your PATH
-
-### macOS/Linux
-1. Download \`leetcli-macos.zip\` or \`leetcli-linux.zip\`
-2. Extract the ZIP file
-3. Run: \`chmod +x install.sh && ./install.sh\`
-4. Or manually copy \`leetcli\` to \`/usr/local/bin\`
-
-## Usage
-\`\`\`bash
-leetcli init
-leetcli fetch daily
-\`\`\`"
+Usage: leetcli init"
 
       # Others upload to the same release
       - name: Upload to GitHub Release
