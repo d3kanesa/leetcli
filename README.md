@@ -34,6 +34,11 @@ Download the latest release for your platform from: https://github.com/d3kanesa/
 3. **Run `install.bat` as Administrator**
 4. Add the `install\bin` directory to your PATH
 
+**Troubleshooting:**
+- If you get "not recognized" error, use `.\install.bat` instead
+- If you get "Build Tools not found" error, install Visual Studio Build Tools from https://visualstudio.microsoft.com/downloads/
+- Alternative: Use `.\quick-build.bat` for helpful guidance
+
 #### 🐧 Linux/macOS
 1. Download `leetcli-linux.zip` or `leetcli-macos.zip`
 2. Extract the ZIP file
@@ -96,12 +101,17 @@ Download the latest release for your platform from: https://github.com/d3kanesa/
 
 2. **Run the installation script**:
    ```cmd
-   install.bat
+   .\install.bat
+   ```
+
+   Or get helpful guidance:
+   ```cmd
+   .\quick-build.bat
    ```
 
    Or build without installing:
    ```cmd
-   build.bat
+   .\build.bat
    ```
 
    Or build manually:
@@ -121,6 +131,13 @@ Download the latest release for your platform from: https://github.com/d3kanesa/
 3. **Add to PATH** (if using manual build):
    - Locate the `install\bin` folder
    - Add it to your system PATH environment variable
+
+**Prerequisites:**
+- **Visual Studio Build Tools** (required for C++ compilation)
+  - Download from: https://visualstudio.microsoft.com/downloads/
+  - Select "Build Tools for Visual Studio 2022" with "C++ build tools" workload
+- **CMake** (3.14 or higher)
+- **Git**
 
 ## ⚖️ Initialization
 Run `init` once at the root of your development folder:
