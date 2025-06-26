@@ -45,23 +45,55 @@ jobs:
         run: |
           mkdir dist
           copy install_dir\bin\leetcli.exe dist\leetcli.exe
-          Compress-Archive -Path dist\leetcli.exe -DestinationPath leetcli-windows.zip
+          copy install.bat dist\install.bat
+          echo "leetcli - LeetCode CLI Tool" > dist\README.txt
+          echo "" >> dist\README.txt
+          echo "Installation:" >> dist\README.txt
+          echo "1. Extract this ZIP file" >> dist\README.txt
+          echo "2. Run install.bat as Administrator" >> dist\README.txt
+          echo "3. Add the install\bin directory to your PATH" >> dist\README.txt
+          echo "" >> dist\README.txt
+          echo "Usage:" >> dist\README.txt
+          echo "leetcli init" >> dist\README.txt
+          Compress-Archive -Path dist\* -DestinationPath leetcli-windows.zip
 
       - name: Package leetcli (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
           mkdir -p dist
-          cp install_dir/bin/leetcli dist/leetcli-macos
-          zip -j leetcli-macos.zip dist/leetcli-macos
+          cp install_dir/bin/leetcli dist/leetcli
+          cp install.sh dist/install.sh
+          chmod +x dist/install.sh
+          echo "leetcli - LeetCode CLI Tool" > dist/README.txt
+          echo "" >> dist/README.txt
+          echo "Installation:" >> dist/README.txt
+          echo "1. Extract this ZIP file" >> dist/README.txt
+          echo "2. Run: chmod +x install.sh && ./install.sh" >> dist/README.txt
+          echo "3. Or manually copy leetcli to /usr/local/bin" >> dist/README.txt
+          echo "" >> dist/README.txt
+          echo "Usage:" >> dist/README.txt
+          echo "leetcli init" >> dist/README.txt
+          zip -j leetcli-macos.zip dist/*
 
       - name: Package leetcli (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           mkdir -p dist
-          cp install_dir/bin/leetcli dist/leetcli-ubuntu
-          zip -j leetcli-ubuntu.zip dist/leetcli-ubuntu
+          cp install_dir/bin/leetcli dist/leetcli
+          cp install.sh dist/install.sh
+          chmod +x dist/install.sh
+          echo "leetcli - LeetCode CLI Tool" > dist/README.txt
+          echo "" >> dist/README.txt
+          echo "Installation:" >> dist/README.txt
+          echo "1. Extract this ZIP file" >> dist/README.txt
+          echo "2. Run: chmod +x install.sh && ./install.sh" >> dist/README.txt
+          echo "3. Or manually copy leetcli to /usr/local/bin" >> dist/README.txt
+          echo "" >> dist/README.txt
+          echo "Usage:" >> dist/README.txt
+          echo "leetcli init" >> dist/README.txt
+          zip -j leetcli-linux.zip dist/*
 
       # Only macOS creates the release
       - name: Create GitHub Release (macOS only)
@@ -69,7 +101,27 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} leetcli-macos.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions"
+          gh release create ${{ github.ref_name }} leetcli-macos.zip leetcli-linux.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions
+
+## Installation
+
+### Windows
+1. Download `leetcli-windows.zip`
+2. Extract the ZIP file
+3. Run `install.bat` as Administrator
+4. Add the `install\bin` directory to your PATH
+
+### macOS/Linux
+1. Download `leetcli-macos.zip` or `leetcli-linux.zip`
+2. Extract the ZIP file
+3. Run: `chmod +x install.sh && ./install.sh`
+4. Or manually copy `leetcli` to `/usr/local/bin`
+
+## Usage
+```bash
+leetcli init
+leetcli fetch daily
+```"
 
       # Others upload to the same release
       - name: Upload to GitHub Release
@@ -77,4 +129,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh release upload ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || 'leetcli-ubuntu.zip' }} --clobber
+          gh release upload ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || 'leetcli-linux.zip' }} --clobber
