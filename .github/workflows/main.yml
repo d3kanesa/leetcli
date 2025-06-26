@@ -101,13 +101,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh release create ${{ github.ref_name }} leetcli-macos.zip leetcli-linux.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions
-
-Installation:
-- Windows: Download leetcli-windows.zip, extract, run install.bat as Administrator
-- macOS/Linux: Download leetcli-macos.zip or leetcli-linux.zip, extract, run chmod +x install.sh && ./install.sh
-
-Usage: leetcli init"
+          gh release create ${{ github.ref_name }} leetcli-macos.zip leetcli-linux.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions. Download and extract the ZIP file, then run the installation script."
 
       # Others upload to the same release
       - name: Upload to GitHub Release
