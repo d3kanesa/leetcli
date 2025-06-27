@@ -3,11 +3,6 @@ project(leetcli)
 
 set(CMAKE_CXX_STANDARD 17)
 
-# Set runtime library to match vcpkg static libraries
-if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 find_package(cpr REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
