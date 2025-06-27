@@ -19,11 +19,13 @@ jobs:
 
       - name: Install dependencies (Linux/macOS)
         if: runner.os != 'Windows'
+        shell: bash
         run: |
           sudo apt-get update || true
           sudo apt-get install -y cmake ninja-build || true
 
       - name: Install vcpkg
+        shell: bash
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           if [[ "$RUNNER_OS" == "Windows" ]]; then
@@ -33,6 +35,7 @@ jobs:
           fi
 
       - name: Install vcpkg dependencies
+        shell: bash
         run: |
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ./vcpkg/vcpkg.exe install cpr nlohmann-json --triplet x64-windows-static
@@ -43,6 +46,7 @@ jobs:
           fi
 
       - name: Configure CMake
+        shell: bash
         run: |
           mkdir build
           if [[ "$RUNNER_OS" == "Windows" ]]; then
@@ -54,10 +58,12 @@ jobs:
           fi
 
       - name: Build and Install
+        shell: bash
         run: |
           cmake --build build --config Release --target install
 
       - name: Package Executable
+        shell: bash
         run: |
           mkdir dist
           if [[ "$RUNNER_OS" == "Windows" ]]; then
