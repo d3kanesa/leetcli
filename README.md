@@ -68,7 +68,12 @@ cd ..
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install cpr nlohmann-json --triplet x64-linux  # or x64-osx for macOS
+# Auto-detect macOS architecture
+if [[ $(uname -m) == "arm64" ]]; then
+  ./vcpkg install cpr nlohmann-json --triplet arm64-osx
+else
+  ./vcpkg install cpr nlohmann-json --triplet x64-linux  # or x64-osx for Intel macOS
+fi
 cd ..
 ```
 
@@ -86,7 +91,12 @@ cmake --build . --config Release --target install
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_BUILD_TYPE=Release
+# Auto-detect macOS architecture
+if [[ $(uname -m) == "arm64" ]]; then
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=arm64-osx -DCMAKE_BUILD_TYPE=Release
+else
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_BUILD_TYPE=Release
+fi
 cmake --build . --config Release --target install
 ```
 

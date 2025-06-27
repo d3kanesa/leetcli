@@ -42,7 +42,12 @@ jobs:
           elif [[ "$RUNNER_OS" == "Linux" ]]; then
             ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-linux
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx
+            # Auto-detect macOS architecture
+            if [[ $(uname -m) == "arm64" ]]; then
+              ./vcpkg/vcpkg install cpr nlohmann-json --triplet arm64-osx
+            else
+              ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx
+            fi
           fi
 
       - name: Configure CMake
@@ -54,7 +59,12 @@ jobs:
           elif [[ "$RUNNER_OS" == "Linux" ]]; then
             cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_BUILD_TYPE=Release
           elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-osx -DCMAKE_BUILD_TYPE=Release
+            # Auto-detect macOS architecture
+            if [[ $(uname -m) == "arm64" ]]; then
+              cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=arm64-osx -DCMAKE_BUILD_TYPE=Release
+            else
+              cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-osx -DCMAKE_BUILD_TYPE=Release
+            fi
           fi
 
       - name: Build and Install
