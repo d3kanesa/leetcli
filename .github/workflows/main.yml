@@ -94,9 +94,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            leetcli-windows.zip
-            leetcli-linux.zip
-            leetcli-macos.zip
+          files: ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || runner.os == 'Linux' && 'leetcli-linux.zip' || 'leetcli-macos.zip' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
