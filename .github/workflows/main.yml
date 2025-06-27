@@ -1,4 +1,4 @@
-name: Build and Release leetcli (Cross-platform)
+name: Build and Release leetcli
 
 on:
   push:
@@ -7,106 +7,80 @@ on:
 
 jobs:
   build:
+    name: Build and Package (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install vcpkg and dependencies
-        shell: bash
+      - name: Install dependencies (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          sudo apt-get update || true
+          sudo apt-get install -y cmake ninja-build || true
+
+      - name: Install vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             ./vcpkg/bootstrap-vcpkg.bat
-            ./vcpkg/vcpkg.exe install cpr nlohmann-json
           else
             ./vcpkg/bootstrap-vcpkg.sh
-            ./vcpkg/vcpkg install cpr nlohmann-json
+          fi
+
+      - name: Install vcpkg dependencies
+        run: |
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            ./vcpkg/vcpkg.exe install cpr nlohmann-json --triplet x64-windows-static
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-linux
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            ./vcpkg/vcpkg install cpr nlohmann-json --triplet x64-osx
           fi
 
       - name: Configure CMake
         run: |
           mkdir build
-          cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Release
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_BUILD_TYPE=Release
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            cmake -S . -B build -G "Ninja" -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-osx -DCMAKE_BUILD_TYPE=Release
+          fi
 
-      - name: Build leetcli
-        run: cmake --build build --config Release --target install
+      - name: Build and Install
+        run: |
+          cmake --build build --config Release --target install
 
-      - name: Install leetcli
-        run: cmake --install build --prefix install_dir
-
-      - name: Package leetcli (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
+      - name: Package Executable
         run: |
           mkdir dist
-          copy install_dir\bin\leetcli.exe dist\leetcli.exe
-          copy install.bat dist\install.bat
-          echo "leetcli - LeetCode CLI Tool" > dist\README.txt
-          echo "" >> dist\README.txt
-          echo "Installation:" >> dist\README.txt
-          echo "1. Extract this ZIP file" >> dist\README.txt
-          echo "2. Run install.bat as Administrator" >> dist\README.txt
-          echo "3. Add the install\bin directory to your PATH" >> dist\README.txt
-          echo "" >> dist\README.txt
-          echo "Usage:" >> dist\README.txt
-          echo "leetcli init" >> dist\README.txt
-          Compress-Archive -Path dist\* -DestinationPath leetcli-windows.zip
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp build/Release/leetcli.exe dist/leetcli.exe
+            cp README.md dist/README.txt
+            cd dist && 7z a ../leetcli-windows.zip *
+          elif [[ "$RUNNER_OS" == "Linux" ]]; then
+            cp build/leetcli dist/leetcli
+            cp README.md dist/README.txt
+            cd dist && zip ../leetcli-linux.zip *
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+            cp build/leetcli dist/leetcli
+            cp README.md dist/README.txt
+            cd dist && zip ../leetcli-macos.zip *
+          fi
 
-      - name: Package leetcli (macOS)
-        if: runner.os == 'macOS'
-        shell: bash
-        run: |
-          mkdir -p dist
-          cp install_dir/bin/leetcli dist/leetcli
-          cp install.sh dist/install.sh
-          chmod +x dist/install.sh
-          echo "leetcli - LeetCode CLI Tool" > dist/README.txt
-          echo "" >> dist/README.txt
-          echo "Installation:" >> dist/README.txt
-          echo "1. Extract this ZIP file" >> dist/README.txt
-          echo "2. Run: chmod +x install.sh && ./install.sh" >> dist/README.txt
-          echo "3. Or manually copy leetcli to /usr/local/bin" >> dist/README.txt
-          echo "" >> dist/README.txt
-          echo "Usage:" >> dist/README.txt
-          echo "leetcli init" >> dist/README.txt
-          zip -j leetcli-macos.zip dist/*
-
-      - name: Package leetcli (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          mkdir -p dist
-          cp install_dir/bin/leetcli dist/leetcli
-          cp install.sh dist/install.sh
-          chmod +x dist/install.sh
-          echo "leetcli - LeetCode CLI Tool" > dist/README.txt
-          echo "" >> dist/README.txt
-          echo "Installation:" >> dist/README.txt
-          echo "1. Extract this ZIP file" >> dist/README.txt
-          echo "2. Run: chmod +x install.sh && ./install.sh" >> dist/README.txt
-          echo "3. Or manually copy leetcli to /usr/local/bin" >> dist/README.txt
-          echo "" >> dist/README.txt
-          echo "Usage:" >> dist/README.txt
-          echo "leetcli init" >> dist/README.txt
-          zip -j leetcli-linux.zip dist/*
-
-      # Only macOS creates the release
-      - name: Create GitHub Release (macOS only)
-        if: runner.os == 'macOS'
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            leetcli-windows.zip
+            leetcli-linux.zip
+            leetcli-macos.zip
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          gh release create ${{ github.ref_name }} leetcli-macos.zip --title "Release ${{ github.ref_name }}" --notes "Auto-generated release from GitHub Actions. Download and extract the ZIP file, then run the installation script."
-
-      # Others upload to the same release
-      - name: Upload to GitHub Release
-        if: runner.os != 'macOS'
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          gh release upload ${{ github.ref_name }} ${{ runner.os == 'Windows' && 'leetcli-windows.zip' || 'leetcli-linux.zip' }} --clobber
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
