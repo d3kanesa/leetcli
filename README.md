@@ -30,11 +30,6 @@
 curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetcli.sh | bash
 ```
 
-**For Windows users:**
-1. Download the latest release from: https://github.com/d3kanesa/leetcli/releases
-2. Extract the ZIP file
-3. Run `install.bat` as Administrator
-
 ---
 
 ### 🐧 Linux/macOS
