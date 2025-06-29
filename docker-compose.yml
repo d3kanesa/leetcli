@@ -1,8 +1,0 @@
-# docker-compose.yml at project root
-services:
-  leetcli:
-    image: ghcr.io/d3kanesa/leetcli:latest
-    volumes:
-      - ~/.leetcli:/home/leet/.leetcli
-      - .:/workdir
-    entrypoint: ["leetcli"]
