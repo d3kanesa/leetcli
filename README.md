@@ -43,8 +43,61 @@
   - Windows: Visual Studio 2019/2022 or Build Tools
   - Linux: GCC 7+ or Clang 5+
   - macOS: Xcode Command Line Tools
+  
+### MacOS/Linux Build Instructions
+  1. **Install prerequisites**:
+   ```sh
+   # Install Homebrew if you don't have it
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   
+   # Install CMake
+   brew install cmake
+   ```
 
-### Step-by-Step Build Instructions
+2. **Set up vcpkg from GitHub**:
+   ```sh
+   # Clone vcpkg to a permanent location
+   git clone https://github.com/Microsoft/vcpkg.git ~/vcpkg
+   
+   # Set the VCPKG_ROOT environment variable
+   echo 'export VCPKG_ROOT="$HOME/vcpkg"' >> ~/.zshrc
+   source ~/.zshrc
+   
+   # Bootstrap vcpkg
+   cd ~/vcpkg
+   ./bootstrap-vcpkg.sh
+   ```
+
+3. **Clone the repository**:
+   ```sh
+   git clone https://github.com/d3kanesa/leetcli.git
+   cd leetcli
+   ```
+
+4. **Install dependencies**:
+   ```sh
+   vcpkg install cpr nlohmann-json
+   ```
+
+5. **Build and install**:
+   ```sh
+   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake
+   cmake --build build --target install
+   ```
+   
+   **Alternative installation to user directory**:
+   ```sh
+   cmake --install build --prefix ~/.local
+   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+   source ~/.zshrc
+   ```
+
+6. **Test the installation**:
+   ```sh
+   leetcli --help
+   ```
+
+### Windows Build Instructions
 
 #### 1. Clone the Repository
 ```bash
@@ -53,8 +106,6 @@ cd leetcli
 ```
 
 #### 2. Install vcpkg and Dependencies
-
-**Windows:**
 ```cmd
 git clone https://github.com/microsoft/vcpkg.git
 cd vcpkg
@@ -63,40 +114,11 @@ vcpkg.exe install cpr nlohmann-json --triplet x64-windows-static
 cd ..
 ```
 
-**Linux/macOS:**
-```bash
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh
-# Auto-detect macOS architecture
-if [[ $(uname -m) == "arm64" ]]; then
-  ./vcpkg install cpr nlohmann-json --triplet arm64-osx
-else
-  ./vcpkg install cpr nlohmann-json --triplet x64-linux  # or x64-osx for Intel macOS
-fi
-cd ..
-```
-
 #### 3. Configure and Build
-
-**Windows:**
 ```cmd
 mkdir build
 cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static -DCMAKE_BUILD_TYPE=Release
-cmake --build . --config Release --target install
-```
-
-**Linux/macOS:**
-```bash
-mkdir build
-cd build
-# Auto-detect macOS architecture
-if [[ $(uname -m) == "arm64" ]]; then
-  cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=arm64-osx -DCMAKE_BUILD_TYPE=Release
-else
-  cmake .. -DCMAKE_TOOLCHAIN_FILE=../vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-linux -DCMAKE_BUILD_TYPE=Release
-fi
 cmake --build . --config Release --target install
 ```
 
