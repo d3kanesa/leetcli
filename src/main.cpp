@@ -200,7 +200,6 @@ int main(int argc, char **argv) {
                   << "  leetcli hints <slug>                Gets the hints for the given problem in leetcode\n"
                   << "  leetcli topics <slug>               Gets the topics for the given problem in leetcode\n"
                   << "  leetcli config set-gemini-key <key> Set your Gemini API key\n"
-                  << "  leetcli config set-gemini-key <key> Set your Gemini API key\n"
                   << "  leetcli help                        Show this help message\n";
         return 0;
     }
