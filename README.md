@@ -117,12 +117,12 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
    git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
-4.  **Generate a build folder**
+4. **Generate a build folder**
    ```cmd
     mkdir build
     cd build
    ```
-5.  **Install dependencies**:
+5. **Install dependencies**:
    ```cmd
    vcpkg install cpr nlohmann-json
    ```
