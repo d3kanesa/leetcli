@@ -134,24 +134,10 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
           -DVCPKG_APPLOCAL_DEPS=ON
    cmake --build . --config Release 
    ```
-   
-   **Alternative installation to user directory**:
-   ```cmd
-   cmake --install build --prefix %USERPROFILE%\.local
-   setx PATH "%PATH%;%USERPROFILE%\.local\bin"
-   ```
-
-7. **Add to PATH (if not using alternative installation)**:
-   - Press `Win + S` and search for **"Environment Variables"**
-   - Click **"Edit the system environment variables"**
-   - In the **System Properties** window, click **"Environment Variables…"**
-   - Under **User variables**, find and select `Path`, then click **Edit**
-   - Click **New** and add `C:\Program Files\leetcli\bin` (or wherever leetcli.exe was installed)
-   - Click **OK** on all windows to apply changes
 
 8. **Test the installation**:
-   Open a new terminal (e.g., `cmd`, `PowerShell`, or Windows Terminal) and run:
    ```cmd
+   cd releases
    leetcli help
    ```
 
