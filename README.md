@@ -125,8 +125,11 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
 
 5. **Build and install**:
    ```cmd
-   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=%VCPKG_ROOT%\scripts\buildsystems\vcpkg.cmake
-   cmake --build build --target install
+   cmake -S .. -B . `
+   >>       -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+   >>       -DVCPKG_TARGET_TRIPLET=x64-windows `
+   >>       -DVCPKG_APPLOCAL_DEPS=ON
+   cmake --build . --config Release 
    ```
    
    **Alternative installation to user directory**:
