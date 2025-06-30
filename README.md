@@ -112,18 +112,22 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
    .\bootstrap-vcpkg.bat
    ```
 
-3. **Clone the repository**:
+3. **Clone the repository (in a directory of your choice)**:
    ```cmd
    git clone https://github.com/d3kanesa/leetcli.git
    cd leetcli
    ```
-
-4. **Install dependencies**:
+4.  **Generate a build folder**
+   ```cmd
+    mkdir build
+    cd build
+   ```
+6.  **Install dependencies**:
    ```cmd
    vcpkg install cpr nlohmann-json
    ```
 
-5. **Build and install**:
+6. **Build and install**:
    ```cmd
    cmake -S .. -B . `
    >>       -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
@@ -138,7 +142,7 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
    setx PATH "%PATH%;%USERPROFILE%\.local\bin"
    ```
 
-6. **Add to PATH (if not using alternative installation)**:
+7. **Add to PATH (if not using alternative installation)**:
    - Press `Win + S` and search for **"Environment Variables"**
    - Click **"Edit the system environment variables"**
    - In the **System Properties** window, click **"Environment Variables…"**
@@ -146,7 +150,7 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
    - Click **New** and add `C:\Program Files\leetcli\bin` (or wherever leetcli.exe was installed)
    - Click **OK** on all windows to apply changes
 
-7. **Test the installation**:
+8. **Test the installation**:
    Open a new terminal (e.g., `cmd`, `PowerShell`, or Windows Terminal) and run:
    ```cmd
    leetcli help
