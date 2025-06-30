@@ -122,17 +122,16 @@ curl -fsSL https://raw.githubusercontent.com/d3kanesa/leetcli/main/install-leetc
     mkdir build
     cd build
    ```
-6.  **Install dependencies**:
+5.  **Install dependencies**:
    ```cmd
    vcpkg install cpr nlohmann-json
    ```
-
 6. **Build and install**:
    ```cmd
    cmake -S .. -B . `
-   >>       -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
-   >>       -DVCPKG_TARGET_TRIPLET=x64-windows `
-   >>       -DVCPKG_APPLOCAL_DEPS=ON
+          -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake `
+          -DVCPKG_TARGET_TRIPLET=x64-windows `
+          -DVCPKG_APPLOCAL_DEPS=ON
    cmake --build . --config Release 
    ```
    
