@@ -1,17 +1,21 @@
 #include "leetcode_api.h"
 #include "utils.h"
+#include "tui.h"
 #include <iostream>
 
 int main(int argc, char **argv) {
     std::vector<std::string> args(argv + 1, argv + argc);
     if (argc < 2) {
-        std::cout << "Usage:\n"
-                << "  leetcli init\n"
-                << "  leetcli fetch <slug>\n";
-        return 1;
+        leetcli::run_tui();
+        return 0;
     }
 
     std::string command = argv[1];
+
+    if (command == "--interactive") {
+        leetcli::run_tui();
+        return 0;
+    }
 
     if (command == "init") {
         leetcli::init_problems_folder();
@@ -185,14 +189,54 @@ int main(int argc, char **argv) {
         leetcli::give_hint(slug, lang_override);
         return 0;
     }
+    if (command == "reset") {
+        if (argc < 3) {
+            std::cerr << "Usage: leetcli reset <slug>\n";
+            return 1;
+        }
+        std::string slug = argv[2];
+        if (slug == "daily") {
+            slug = leetcli::get_daily_question_slug();
+        }
+        leetcli::reset_solution(slug);
+        return 0;
+    }
+    if (command == "sync") {
+        int limit = 0;  // 0 = all
+        for (int i = 2; i < argc; ++i) {
+            std::string arg = argv[i];
+            if (arg.rfind("--limit=", 0) == 0) limit = std::atoi(arg.c_str() + 8);
+        }
+        std::cout << "Fetching your solved & attempted problem list (this can take a while)...\n";
+        leetcli::sync_problems(limit, [](const leetcli::SyncProgress& p) {
+            if (!p.error.empty()) {
+                std::cerr << p.error << "\n";
+                return;
+            }
+            if (p.finished) {
+                std::cout << "Sync complete: " << p.done << " problem(s) processed.\n";
+                return;
+            }
+            if (p.total > 0 && !p.current.empty()) {
+                std::cout << "[" << p.done << "/" << p.total << "] " << p.current
+                          << " - " << p.last_result << "\n";
+            }
+        });
+        return 0;
+    }
     if (command == "help") {
         std::cout << "leetcli - LeetCode CLI Tool\n\n"
-                  << "Usage:\n"
+                  << "Main Usage:\n"
+                  << "  leetcli                              Launch the interactive terminal UI (recommended)\n"
+                  << "  leetcli --interactive                Same as running leetcli with no arguments\n\n"
+                  << "Other commands:\n"
                   << "  leetcli init                        Initialize the problems directory in your current directory\n"
                   << "  leetcli fetch <slug> [--lang=...]   Fetch a problem by slug or use 'daily' for the daily question (langs: cpp, python3, java)\n"
                   << "  leetcli solve <slug> [--lang=...]   Open the solution file in your default editor\n"
                   << "  leetcli list                        List all fetched problems\n"
                   << "  leetcli login                       Set your LEETCODE_SESSION and CSRF token\n"
+                  << "  leetcli sync [--limit=N]            Download all your solved & attempted problems (with your submitted code) locally\n"
+                  << "  leetcli reset <slug>                Delete your local solution file for a problem\n"
                   << "  leetcli run <slug>  [--lang=...]    Run your solution against LeetCode testcases\n"
                   << "  leetcli submit <slug> [--lang=...]  Submit your solution to LeetCode\n"
                   << "  leetcli runtime <slug> [--lang=...] Analyze time/space complexity using Gemini\n"

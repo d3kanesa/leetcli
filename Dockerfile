@@ -18,7 +18,7 @@ ENV VCPKG_ROOT=/vcpkg
 COPY . .
 
 # Install vcpkg dependencies
-RUN /vcpkg/vcpkg install cpr nlohmann-json
+RUN /vcpkg/vcpkg install cpr nlohmann-json ftxui
 
 # Build
 RUN cmake -S . -B build \
